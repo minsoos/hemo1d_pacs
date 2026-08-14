@@ -1,0 +1,12 @@
+build/
+build-*/
+.venv/
+venv/
+.cache/
+CMakeFiles/
+CMakeCache.txt
+compile_commands.json
+*.o
+*.obj
+out/
+out_*/
