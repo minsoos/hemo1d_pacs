@@ -30,9 +30,9 @@ namespace hemo1d {
         public:
             Vessel(Id id, std::string name, VesselParameters params);
  
-            Id id() const noexcept { return id_,}
+            Id id() const noexcept { return id_;}
             const std::string& name() const noexcept { return name_;}
-            const VesselParameters& parameters() const noexcept {return params_,}
+            const VesselParameters& parameters() const noexcept {return params_;}
     };
 
 } //namespace hemo1d
