@@ -1,7 +1,7 @@
 set(HEMO1D_CORE_SOURCES
-    node.cpp
-    vessel.cpp
-    network.cpp
+    core/network.cpp
+    core/node.cpp
+    core/vessel.cpp
 )
 
 if(NOT HEMO1D_CORE_SOURCES)
