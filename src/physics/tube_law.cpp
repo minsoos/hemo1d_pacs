@@ -13,7 +13,7 @@ Real LinearElasticTubeLaw::pressure(Real A, Real A0, Real beta) const {
 }
 
 Real LinearElasticTubeLaw::pressureDerivative(Real A, Real A0, Real beta) const {
-    return beta / (A0 * std::sqrt(A));
+    return beta / (2.0 * A0 * std::sqrt(A));
 }
 
 Real LinearElasticTubeLaw::pressureFluxIntegral(Real A, Real A0, Real beta, Real rho) const {
