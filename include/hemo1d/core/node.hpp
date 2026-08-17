@@ -50,7 +50,7 @@ public:
     Id id() const noexcept {return id_;}
     const std::string& name() const noexcept {return name_;}
     const std::vector<VesselConnection>& connections() const noexcept {return connections_;}
-    const std::optional<BoundaryConditionSpec>& boundaryCondition() {return boundaryCondition_;}
+    const std::optional<BoundaryConditionSpec>& boundaryCondition() const noexcept {return boundaryCondition_;}
 
     // It has connections().size() - 1 length.
     // The angle k is between connections()[0] and connections()[k]
