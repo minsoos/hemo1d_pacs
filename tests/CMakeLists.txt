@@ -1,4 +1,5 @@
 set(HEMO1D_TEST_SOURCES
+    test_tube_law.cpp
 )
 
 if(NOT HEMO1D_TEST_SOURCES)
