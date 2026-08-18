@@ -1,4 +1,5 @@
 set(HEMO1D_TEST_SOURCES
+    network_test.cpp
 )
 
 if(NOT HEMO1D_TEST_SOURCES)
