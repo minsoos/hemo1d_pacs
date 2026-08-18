@@ -65,19 +65,18 @@ void Network::buildAndValidate(){
         for (const VesselConnection& conn : node.connections()){
             const auto it = vesselIndexById_.find(conn.vesselId);
             if (it == vesselIndexById_.end()){
-                throw std::out_of_range("Network: Node " + std::to_string(node.id()) + " has as connection the node " + std::to_string(conn.vesselId) + " which doesn't exist");
+                throw std::out_of_range("Network: Node " + std::to_string(node.id()) + " has as connection the vessel " + std::to_string(conn.vesselId) + " which doesn't exist");
             }
             // Assigning the ends to vesselEndNodeId created before
             std::array<Id, 2>& ends = vesselEndNodeId_[it->second];
             ends[endIndex(conn.end)] = node.id();
         }
-
-        for (const Vessel& vessel : vessels_){
-            const std::array<Id, 2>& ends = vesselEndNodeId_[vesselIndexById_.at(vessel.id())];
-            if (ends[0] == kInvalidId || ends[1] == kInvalidId){
-                throw std::runtime_error("Network: Vessel " + std::to_string(vessel.id()) + " has the node " + std::to_string(ends[0]) + " or " + 
-                std::to_string(ends[1]) + " which it is not assigned");
-            }
+    }
+    for (const Vessel& vessel : vessels_){
+        const std::array<Id, 2>& ends = vesselEndNodeId_[vesselIndexById_.at(vessel.id())];
+        if (ends[0] == kInvalidId || ends[1] == kInvalidId){
+            throw std::runtime_error("Network: Vessel " + std::to_string(vessel.id()) + " has the node " + std::to_string(ends[0]) + " or " + 
+            std::to_string(ends[1]) + " which it is not assigned");
         }
     }
 }
@@ -104,7 +103,7 @@ const Node& Network::node(Id id) const {
 Id Network::nodeIdAt(Id vesselId, VesselEnd end) const {
     const auto it = vesselIndexById_.find(vesselId);
     if (it == vesselIndexById_.end()){
-        throw std::runtime_error("Network: Node " + std::to_string(vesselId) + " is not listed"); 
+        throw std::runtime_error("Network: Vessel " + std::to_string(vesselId) + " is not listed"); 
     }
     return vesselEndNodeId_[it->second][endIndex(end)];
 }
