@@ -22,7 +22,7 @@ BoundaryConditionSpec nonReflecting() {
 
 } // namespace
 
-TEST_CASE("Simplest network") {
+TEST_CASE("Network: Simplest network") {
     std::vector<Vessel> vessels{makeVessel(1)};
     std::vector<Node> nodes{
         Node(1, "in", {{1, VesselEnd::Proximal}}, nonReflecting()),
@@ -36,7 +36,7 @@ TEST_CASE("Simplest network") {
     CHECK(net.nodeIdAt(1, VesselEnd::Distal) == 2);
 }
 
-TEST_CASE("Duplicated vessels") {
+TEST_CASE("Network: Duplicated vessels") {
     std::vector<Vessel> vessels{makeVessel(1), makeVessel(1)};
     std::vector<Node> nodes{
         Node(1, "in", {{1, VesselEnd::Proximal}}, nonReflecting()),
@@ -46,7 +46,7 @@ TEST_CASE("Duplicated vessels") {
     CHECK_THROWS(Network(FluidProperties{}, std::move(vessels), std::move(nodes)));
 }
 
-TEST_CASE("Duplicated nodes") {
+TEST_CASE("Network: Duplicated nodes") {
     std::vector<Vessel> vessels{makeVessel(1)};
     std::vector<Node> nodes{
         Node(1, "in", {{1, VesselEnd::Proximal}}, nonReflecting()),
@@ -56,7 +56,7 @@ TEST_CASE("Duplicated nodes") {
     CHECK_THROWS(Network(FluidProperties{}, std::move(vessels), std::move(nodes)));
 }
 
-TEST_CASE("Duplicated node type") {
+TEST_CASE("Network: Duplicated node type") {
     std::vector<Vessel> vessels{makeVessel(1)};
     std::vector<Node> nodes{
         Node(1, "in", {{1, VesselEnd::Proximal}}, nonReflecting()),
@@ -66,7 +66,7 @@ TEST_CASE("Duplicated node type") {
     CHECK_THROWS(Network(FluidProperties{}, std::move(vessels), std::move(nodes)));
 }
 
-TEST_CASE("2 nodes assigning to 1 space") {
+TEST_CASE("Network: 2 nodes assigning to 1 space") {
     std::vector<Vessel> vessels{makeVessel(1)};
     std::vector<Node> nodes{
         Node(1, "in1", {{1, VesselEnd::Proximal}}, nonReflecting()),
@@ -75,4 +75,18 @@ TEST_CASE("2 nodes assigning to 1 space") {
     };
  
     CHECK_THROWS(Network(FluidProperties{}, std::move(vessels), std::move(nodes)));
+}
+
+TEST_CASE("Network: Juntion creation") {
+    std::vector<Vessel> vessels{makeVessel(1), makeVessel(2), makeVessel(3)};
+    std::vector<Node> nodes{
+        Node(1, "in1", {{1, VesselEnd::Proximal}}, nonReflecting()),
+        Node(2, "in2", {{2, VesselEnd::Proximal}}, nonReflecting()),
+        Node(3, "junction",
+             {{1, VesselEnd::Distal}, {2, VesselEnd::Distal}, {3, VesselEnd::Proximal}},
+             std::nullopt, {0.5, 1.0}),
+        Node(4, "out", {{3, VesselEnd::Distal}}, nonReflecting()),
+    };
+    const Network net(FluidProperties{}, std::move(vessels), std::move(nodes));
+    CHECK(net.node(3).kind() == NodeKind::Junction);
 }
