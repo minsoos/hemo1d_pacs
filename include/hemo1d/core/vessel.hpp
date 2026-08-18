@@ -7,7 +7,7 @@
 
 namespace hemo1d {
     // Which extreme of the vessel a node is
-    enum class VesselEnd {Proximal, distal};
+    enum class VesselEnd {Proximal, Distal};
 
     // Discretization parameters:
 
