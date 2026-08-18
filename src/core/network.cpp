@@ -67,8 +67,14 @@ void Network::buildAndValidate(){
             if (it == vesselIndexById_.end()){
                 throw std::out_of_range("Network: Node " + std::to_string(node.id()) + " has as connection the vessel " + std::to_string(conn.vesselId) + " which doesn't exist");
             }
-            // Assigning the ends to vesselEndNodeId created before
+            // Checking if the node was already assigned
+            Index endSlot = endIndex(conn.end);
             std::array<Id, 2>& ends = vesselEndNodeId_[it->second];
+            if (ends[endSlot]!=kInvalidId){
+                throw std::runtime_error("Network: Node " + std::to_string(node.id()) + " cannot assign vessel " + std::to_string(conn.vesselId) + 
+                    " since slot " + std::to_string(endSlot) + " already assigned");
+            }
+            // Assigning the ends to vesselEndNodeId created before
             ends[endIndex(conn.end)] = node.id();
         }
     }
