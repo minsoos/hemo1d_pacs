@@ -71,8 +71,8 @@ void Network::buildAndValidate(){
             Index endSlot = endIndex(conn.end);
             std::array<Id, 2>& ends = vesselEndNodeId_[it->second];
             if (ends[endSlot]!=kInvalidId){
-                throw std::runtime_error("Network: Node " + std::to_string(node.id()) + " cannot assign vessel " + std::to_string(conn.vesselId) + 
-                    " since slot " + std::to_string(endSlot) + " already assigned");
+                throw std::runtime_error(std::string("Network: End ") + endName(conn.end) + " of vessel " + std::to_string(conn.vesselId) + 
+                    "is connected to more than 1 node");
             }
             // Assigning the ends to vesselEndNodeId created before
             ends[endIndex(conn.end)] = node.id();

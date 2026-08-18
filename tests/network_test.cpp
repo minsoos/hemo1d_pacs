@@ -22,7 +22,7 @@ BoundaryConditionSpec nonReflecting() {
 
 } // namespace
 
-TEST_CASE("Network: Simplest network") {
+TEST_CASE("Network: Simplest network", "[network]") {
     std::vector<Vessel> vessels{makeVessel(1)};
     std::vector<Node> nodes{
         Node(1, "in", {{1, VesselEnd::Proximal}}, nonReflecting()),
@@ -36,7 +36,7 @@ TEST_CASE("Network: Simplest network") {
     CHECK(net.nodeIdAt(1, VesselEnd::Distal) == 2);
 }
 
-TEST_CASE("Network: Duplicated vessels") {
+TEST_CASE("Network: Duplicated vessels", "[network]") {
     std::vector<Vessel> vessels{makeVessel(1), makeVessel(1)};
     std::vector<Node> nodes{
         Node(1, "in", {{1, VesselEnd::Proximal}}, nonReflecting()),
@@ -46,7 +46,7 @@ TEST_CASE("Network: Duplicated vessels") {
     CHECK_THROWS(Network(FluidProperties{}, std::move(vessels), std::move(nodes)));
 }
 
-TEST_CASE("Network: Duplicated nodes") {
+TEST_CASE("Network: Duplicated nodes", "[network]") {
     std::vector<Vessel> vessels{makeVessel(1)};
     std::vector<Node> nodes{
         Node(1, "in", {{1, VesselEnd::Proximal}}, nonReflecting()),
@@ -56,17 +56,16 @@ TEST_CASE("Network: Duplicated nodes") {
     CHECK_THROWS(Network(FluidProperties{}, std::move(vessels), std::move(nodes)));
 }
 
-TEST_CASE("Network: Duplicated node type") {
+TEST_CASE("Network: Unassigned end", "[network]") {
     std::vector<Vessel> vessels{makeVessel(1)};
     std::vector<Node> nodes{
         Node(1, "in", {{1, VesselEnd::Proximal}}, nonReflecting()),
-        Node(2, "out", {{1, VesselEnd::Proximal}}, nonReflecting()),
     };
  
     CHECK_THROWS(Network(FluidProperties{}, std::move(vessels), std::move(nodes)));
 }
 
-TEST_CASE("Network: 2 nodes assigning to 1 space") {
+TEST_CASE("Network: 2 nodes assigning to 1 space", "[network]") {
     std::vector<Vessel> vessels{makeVessel(1)};
     std::vector<Node> nodes{
         Node(1, "in1", {{1, VesselEnd::Proximal}}, nonReflecting()),
@@ -77,7 +76,7 @@ TEST_CASE("Network: 2 nodes assigning to 1 space") {
     CHECK_THROWS(Network(FluidProperties{}, std::move(vessels), std::move(nodes)));
 }
 
-TEST_CASE("Network: Juntion creation") {
+TEST_CASE("Network: Juntion creation", "[network]") {
     std::vector<Vessel> vessels{makeVessel(1), makeVessel(2), makeVessel(3)};
     std::vector<Node> nodes{
         Node(1, "in1", {{1, VesselEnd::Proximal}}, nonReflecting()),
