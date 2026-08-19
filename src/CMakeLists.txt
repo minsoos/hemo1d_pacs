@@ -8,7 +8,8 @@ if(NOT HEMO1D_CORE_SOURCES)
     return()
 endif()
 
-add_library(hemo1d_core ${HEMO1D_CORE_SOURCES})
+add_library(hemo1d_core ${HEMO1D_CORE_SOURCES}
+    physics/flux.cpp)
 
 target_include_directories(hemo1d_core PUBLIC
     ${PROJECT_SOURCE_DIR}/include
