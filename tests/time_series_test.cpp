@@ -68,3 +68,15 @@ TEST_CASE("TimeSeries evaluate outside the range", "[time_series]") {
     CHECK_THROWS(ts.value(2.1));                    // clearly outside -> throws
     CHECK_THROWS(ts.value(-0.5));
 }
+
+
+TEST_CASE("TimeSeries::fromCsv reads a header and data rows", "[time_series]") {
+    const std::filesystem::path path = std::filesystem::path(HEMO1D_EXAMPLES_DIR) /
+                                        "data" / "inlet_area_ramp.csv";
+    const TimeSeries ts = TimeSeries::fromCsv(path);
+ 
+    REQUIRE(ts.times().size() == 2);
+    CHECK(ts.value(0.0) == Approx(0.126));
+    CHECK(ts.value(1.0) == Approx(0.136));
+    CHECK(ts.value(0.5) == Approx(0.131));
+}

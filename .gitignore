@@ -10,3 +10,4 @@ compile_commands.json
 *.obj
 out/
 out_*/
+*.csv
