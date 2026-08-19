@@ -2,6 +2,10 @@ set(HEMO1D_CORE_SOURCES
     physics/tube_law.cpp
     physics/characteristics.cpp
     physics/flux.cpp
+    core/network.cpp
+    core/node.cpp
+    core/vessel.cpp
+    core/linear_algebra.cpp
 )
 
 if(NOT HEMO1D_CORE_SOURCES)

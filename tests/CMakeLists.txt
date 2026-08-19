@@ -2,6 +2,8 @@ set(HEMO1D_TEST_SOURCES
     test_tube_law.cpp
     test_characteristics.cpp
     test_flux.cpp
+    network_test.cpp
+    test_linear_algebra.cpp
 )
 
 if(NOT HEMO1D_TEST_SOURCES)
