@@ -1,4 +1,7 @@
 set(HEMO1D_CORE_SOURCES
+    physics/tube_law.cpp
+    physics/characteristics.cpp
+    physics/flux.cpp
     core/network.cpp
     core/node.cpp
     core/vessel.cpp
