@@ -86,6 +86,15 @@ TimeSeries TimeSeries::fromCsv(const std::filesystem::path& path){
 
 
 Real TimeSeries::value(Real t) const {
+    // It can take values between the range, it doesn't accept extrapolation
+    const Real tFront = times_.front();
+    const Real tBack = times_.back();
+    constexpr Real kTol = 1e-12;
+    if (t < tFront - kTol || t > tBack + kTol){
+        throw std::out_of_range("TimeSeries: value: Value retrieved must be within the t-range");
+    }
+    if (t <= tFront) return values_.front();
+    if (t >= tBack)  return values_.back();
     const auto it = std::upper_bound(times_.begin(), times_.end(), t);
     const Index i = static_cast<Index>(it - times_.begin());
     const Real t0 = times_[i-1];

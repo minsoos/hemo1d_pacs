@@ -17,7 +17,8 @@ public:
     static TimeSeries fromCsv(const std::filesystem::path& path);
 
     // value: Gives the value of the time series at time t
-    // It can take values between times().front() and times().back()
+    // It can take values between times().front() and times().back() with a tolerance of 1e-12
+    // If there is a difference less than 1e-12, it clamps the values
     // It uses interpolation for non sampled values.
     Real value(Real t) const;
 
