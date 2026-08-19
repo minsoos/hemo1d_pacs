@@ -1,6 +1,7 @@
 set(HEMO1D_CORE_SOURCES
     physics/tube_law.cpp
     physics/characteristics.cpp
+    physics/flux.cpp
 )
 
 if(NOT HEMO1D_CORE_SOURCES)
@@ -8,8 +9,7 @@ if(NOT HEMO1D_CORE_SOURCES)
     return()
 endif()
 
-add_library(hemo1d_core ${HEMO1D_CORE_SOURCES}
-    physics/flux.cpp)
+add_library(hemo1d_core ${HEMO1D_CORE_SOURCES})
 
 target_include_directories(hemo1d_core PUBLIC
     ${PROJECT_SOURCE_DIR}/include
