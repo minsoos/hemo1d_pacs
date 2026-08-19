@@ -16,7 +16,8 @@ FetchContent_Declare(
 )
 FetchContent_MakeAvailable(catch2)
  
-add_executable(hemo1d_tests ${HEMO1D_TEST_SOURCES})
+add_executable(hemo1d_tests ${HEMO1D_TEST_SOURCES}
+ test_linear_algebra.cpp)
 
 target_link_libraries(hemo1d_tests PRIVATE hemo1d_core Catch2::Catch2WithMain)
  
