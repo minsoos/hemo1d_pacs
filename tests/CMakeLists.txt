@@ -1,5 +1,6 @@
 set(HEMO1D_TEST_SOURCES
     network_test.cpp
+    time_series_test.cpp
 )
 
 if(NOT HEMO1D_TEST_SOURCES)

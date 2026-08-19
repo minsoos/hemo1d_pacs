@@ -2,6 +2,7 @@ set(HEMO1D_CORE_SOURCES
     core/network.cpp
     core/node.cpp
     core/vessel.cpp
+    io/time_series.cpp
 )
 
 if(NOT HEMO1D_CORE_SOURCES)
