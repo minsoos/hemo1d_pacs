@@ -1,5 +1,6 @@
 set(HEMO1D_CORE_SOURCES
     physics/tube_law.cpp
+    physics/characteristics.cpp
 )
 
 if(NOT HEMO1D_CORE_SOURCES)
