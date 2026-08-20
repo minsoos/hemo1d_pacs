@@ -117,6 +117,7 @@ Network loadNetwork(const std::filesystem::path& jsonFile){
     // Parse Vessels
     std::vector<Vessel> vessels;
     const json& vesselsJson = root.at("vessels");
+    if (!vesselsJson.is_array()) throw std::runtime_error("loadNetwork: 'vessels' must be an array");
     vessels.reserve(vesselsJson.size());
     for (Index i=0; i<vesselsJson.size(); ++i){
         try{
