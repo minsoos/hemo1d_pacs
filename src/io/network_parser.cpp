@@ -5,8 +5,7 @@
 #include <nlohmann/json.hpp>
 #include <stdexcept>
 
-namespace hemo1d::io {
-
+namespace hemo1d{
 namespace{
 
 using json = nlohmann::json;
@@ -43,7 +42,7 @@ Vessel parseVessel(const json& j){
     params.beta = j.at("beta").get<Real>();
     params.alpha = j.value("alpha", 4.0/3.0);
     params.frictionKr = j.value("friction_kr", 0.0);
-    params.length = j.value("n_elements", Index{1});
+    params.nElements = j.value("n_elements", Index{1});
 
     if (j.contains("polynomial_order")){
         params.polynomialOrder = j.at("polynomial_order").get<unsigned>();
@@ -87,10 +86,10 @@ Node parseNode(const json& j, const std::filesystem::path& baseDir){
 
     return Node(id, name, std::move(connections), std::move(bc), std::move(angles));
 }
-
 } // namespace
+} // namespace hemo1d
 
-
+namespace hemo1d::io{
 Network loadNetwork(const std::filesystem::path& jsonFile){
     std::ifstream file(jsonFile);
     if (!file){
@@ -140,4 +139,5 @@ Network loadNetwork(const std::filesystem::path& jsonFile){
     }
 
     return Network(fluid, std::move(vessels), std::move(nodes));
+}
 } // namespace hemo1d::io
