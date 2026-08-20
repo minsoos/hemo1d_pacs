@@ -7,6 +7,7 @@
 
 namespace hemo1d::physics {
 
+// Conservative form of flux in the 1D blood flow equations.
 inline std::pair<Real, Real> physicalFlux(
     Real A, Real Q, Real A0, Real beta, Real alpha, Real rho, const TubeLaw& tubeLaw
 ) {

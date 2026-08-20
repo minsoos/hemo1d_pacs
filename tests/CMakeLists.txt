@@ -6,6 +6,7 @@ set(HEMO1D_TEST_SOURCES
     test_time_series.cpp
     test_linear_algebra.cpp
     test_quadrature.cpp
+    test_nodal_basis.cpp
 )
 
 if(NOT HEMO1D_TEST_SOURCES)
