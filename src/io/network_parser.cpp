@@ -60,8 +60,8 @@ std::optional<BoundaryConditionSpec> parseBoundaryCondition(const json& j,
             spec.type = parseBcType(bc.at("type").get<std::string>());
             if (spec.type == BoundaryConditionType::Prescribed){
                 spec.quantity = parsePrescribedQuantity(bc.at("quantity").get<std::string>());
-                const std::string csFile = bc.at("csv_file").get<std::string>();
-                spec.csvFile = csFile;
+                const std::string csvFile = bc.at("csv_file").get<std::string>();
+                spec.csvFile = csvFile;
             }
             return spec;
 }
