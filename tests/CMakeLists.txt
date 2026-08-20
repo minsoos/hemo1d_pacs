@@ -8,6 +8,7 @@ set(HEMO1D_TEST_SOURCES
     test_quadrature.cpp
     test_nodal_basis.cpp
     test_reference_element.cpp
+    test_mesh.cpp
 )
 
 if(NOT HEMO1D_TEST_SOURCES)
@@ -24,8 +25,7 @@ FetchContent_Declare(
 )
 FetchContent_MakeAvailable(catch2)
  
-add_executable(hemo1d_tests ${HEMO1D_TEST_SOURCES}
- test_mesh.cpp)
+add_executable(hemo1d_tests ${HEMO1D_TEST_SOURCES})
 
 target_link_libraries(hemo1d_tests PRIVATE hemo1d_core Catch2::Catch2WithMain)
  
