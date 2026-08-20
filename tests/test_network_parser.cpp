@@ -14,7 +14,7 @@ std::filesystem::path examplePath(const std::string& name){
 }
 } // namespace
 
-TEST_CASE("loadNetwork: Simple Bifurcation example", "[network_parser]"){
+TEST_CASE("Network Parser: loadNetwork: Simple Bifurcation example", "[network_parser]"){
     const Network net = io::loadNetwork(examplePath("simple_bifurcation.json"));
 
 CHECK(net.vesselCount() == 3);
@@ -55,4 +55,11 @@ CHECK(net.vesselCount() == 3);
  
     const Node& outlet3 = net.node(4);
     REQUIRE(outlet3.boundaryCondition().has_value());
-    CHECK(outlet3.boundaryCondition()->type == BoundaryConditionType::NonReflecting);}
+    CHECK(outlet3.boundaryCondition()->type == BoundaryConditionType::NonReflecting);
+
+}
+
+ 
+TEST_CASE("Network Parser: loadNetwork: Throws an error on a missing file", "[network_parser]") {
+    CHECK_THROWS(io::loadNetwork("does/not/exist.json"));
+}
