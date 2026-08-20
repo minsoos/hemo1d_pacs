@@ -11,3 +11,4 @@ compile_commands.json
 out/
 out_*/
 *.csv
+!inlet_area_ramp.csv
