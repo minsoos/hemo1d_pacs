@@ -7,6 +7,7 @@ set(HEMO1D_CORE_SOURCES
     core/vessel.cpp
     io/time_series.cpp
     core/linear_algebra.cpp
+    dg/quadrature.cpp
 )
 
 if(NOT HEMO1D_CORE_SOURCES)
