@@ -7,6 +7,7 @@ set(HEMO1D_TEST_SOURCES
     test_linear_algebra.cpp
     test_quadrature.cpp
     test_nodal_basis.cpp
+    test_reference_element.cpp
 )
 
 if(NOT HEMO1D_TEST_SOURCES)
