@@ -10,6 +10,7 @@ set(HEMO1D_CORE_SOURCES
     dg/quadrature.cpp
     dg/nodal_basis.cpp
     dg/reference_element.cpp
+    dg/element.cpp
 )
 
 if(NOT HEMO1D_CORE_SOURCES)
