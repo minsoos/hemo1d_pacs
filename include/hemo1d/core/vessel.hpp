@@ -19,6 +19,7 @@ namespace hemo1d {
         Real frictionKr = 0.0;
 
         Index nElements = 1;
+        std::optional<unsigned> polynomialOrder;
     };
 
     class Vessel {
