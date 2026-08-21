@@ -29,13 +29,13 @@ int main(int argc, char** argv){
         const hemo1d::Network network = hemo1d::io::loadNetwork(argv[1]);
 
         std::cout << "Fluid: Density=" << network.fluid().density << 
-        " g/cm^3, viscosity" << network.fluid().density << " g/(cm s)\n\n";
+        " g/cm^3, viscosity=" << network.fluid().viscosity << " g/(cm s)\n\n";
 
         std::cout << "Vessels (" << network.vesselCount() << "):\n";
         for (const hemo1d::Vessel& v : network.vessels()){
             const auto& p = v.parameters();
             std::cout << " [" << v.id() << "] " << v.name() << ": L=" << p.length <<
-                        " cm, A0=" <<p.A0 << " cm^2," << p.beta << " g/s^2, alpha="<<
+                        " cm, A0=" <<p.A0 << " cm^2, " << p.beta << " g/s^2, alpha="<<
                         p.alpha << ", n_elements=" << p.nElements << " -> proximal node " <<
                         network.nodeIdAt(v.id(), hemo1d::VesselEnd::Proximal) << ", distal node " <<
                         network.nodeIdAt(v.id(), hemo1d::VesselEnd::Distal) << "\n";
@@ -43,8 +43,8 @@ int main(int argc, char** argv){
 
         std::cout << "\n Nodes (" << network.nodeCount() << "):\n";
         for (const hemo1d::Node& n : network.nodes()){
-            std::cout << " [" << n.id() << "] " << n.name() << " ()" << nodeKindName(n.kind()) <<
-                        ") , connections:";
+            std::cout << " [" << n.id() << "] " << n.name() << " (" << nodeKindName(n.kind()) <<
+                        "), connections:";
                         for (const auto& c : n.connections()){
                             std::cout << " vessel " << c.vesselId << " (" << endName(c.end) << ")";
                         }
