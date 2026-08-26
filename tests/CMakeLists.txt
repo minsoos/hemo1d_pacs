@@ -9,6 +9,7 @@ set(HEMO1D_TEST_SOURCES
     test_nodal_basis.cpp
     test_reference_element.cpp
     test_mesh.cpp
+    test_network_parser.cpp
 )
 
 if(NOT HEMO1D_TEST_SOURCES)

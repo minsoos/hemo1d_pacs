@@ -24,6 +24,7 @@ FetchContent_MakeAvailable(nlohmann_json)
 find_package(OpenMP QUIET)
  
 add_subdirectory(src)
+add_subdirectory(apps)
  
 if(HEMO1D_BUILD_TESTS)
     enable_testing()

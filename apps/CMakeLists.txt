@@ -1,0 +1,2 @@
+add_executable(hemo1d_network_info network_info.cpp)
+target_link_libraries(hemo1d_network_info PRIVATE hemo1d_core)
