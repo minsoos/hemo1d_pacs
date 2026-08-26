@@ -9,6 +9,7 @@ set(HEMO1D_CORE_SOURCES
     core/linear_algebra.cpp
     io/network_parser.cpp
     physics/compatibility.cpp
+    physics/exterior_boundary.cpp
 )
 
 if(NOT HEMO1D_CORE_SOURCES)
