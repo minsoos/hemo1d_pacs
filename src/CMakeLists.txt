@@ -8,6 +8,7 @@ set(HEMO1D_CORE_SOURCES
     io/time_series.cpp
     core/linear_algebra.cpp
     io/network_parser.cpp
+    physics/compatibility.cpp
 )
 
 if(NOT HEMO1D_CORE_SOURCES)
