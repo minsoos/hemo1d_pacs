@@ -66,7 +66,13 @@ void compatibilityUpdate(const std::vector<Real>& x, std::vector<Real>& F, const
             J(row, 2*i) = lOut[i].first;
             J(row, 2*i+1) = lOut[i].second;
         }
-    }
+}
+
+Real l2Norm(const std::vector<Real>& v){
+        Real sq = 0.0;
+        for (Real e : v) sq += e * e;
+        return std::sqrt(sq);
+}
 
 } // namespace
 
@@ -108,21 +114,25 @@ JunctionSolution solveJunction(const std::vector<JunctionBranch>& branches, Real
         x[2*i+1] = branches[i].Q;
     }
 
+    // Helper lambda functions
+    auto update = [&](const std::vector<Real>& xx, std::vector<Real>& Fout, DenseMatrix& Jout){
+        Fout.assign(n, 0.0);
+        Jout = DenseMatrix(n,n,0.0);
+        MassConservationUpdate(xx, sigma, Fout, Jout, N);
+        TotalPressureUpdate(xx, sigma, rho, tubeLaw, Fout, Jout, branches, N);
+        compatibilityUpdate(xx, Fout, compatRhs, Jout, lOut, N);
+    };
+   
+
     // Newton raphson method
     int iter = 0;
     bool converged = false, stalled = false;
     Real residualNorm = 0.0;
+    std::vector<Real> F(n, 0.0);
+    DenseMatrix J(n, n, 0.0);
     for (; iter<maxIterations; ++iter){
-        std::vector<Real> F(n, 0.0);
-        DenseMatrix J(n, n, 0.0);
-        MassConservationUpdate(x, sigma, F, J, N);
-        TotalPressureUpdate(x, sigma, rho, tubeLaw, F, J, branches, N);
-        compatibilityUpdate(x, F, compatRhs, J, lOut, N);
-
-        // residual norm calc:
-        Real fNormSq = 0.0;
-        for (Real f : F) fNormSq += f*f;
-        residualNorm = std::sqrt(fNormSq);
+        update(x, F, J);
+        residualNorm = l2Norm(F);
         if (residualNorm < residualTol){
             converged = true;
             break;
@@ -130,9 +140,11 @@ JunctionSolution solveJunction(const std::vector<JunctionBranch>& branches, Real
         // -1 * F
         std::vector<Real> negF(n);
         for (Index k = 0; k < n; ++k) negF[k] = -F[k];
+
+        // Solve linear system
         const std::vector<Real> delta = solveLinearSystem(J, negF);
 
-        // Condition break
+        // Relative change respect to x
         Real maxRelChange = 0.0;
         for (Index k=0; k<n; ++k){
             x[k] += delta[k];
@@ -141,6 +153,7 @@ JunctionSolution solveJunction(const std::vector<JunctionBranch>& branches, Real
                                                     (1.0 + std::abs(x[k])));
         }
 
+        // Newton convergence break
         if (maxRelChange < incrementTol){
             stalled = true;
             ++iter;
@@ -148,6 +161,13 @@ JunctionSolution solveJunction(const std::vector<JunctionBranch>& branches, Real
         }
 
     }
+
+    if (!converged){
+        update(x, F, J);
+        residualNorm = l2Norm(F);
+        if (residualNorm < residualTol) converged = true;
+    }
+    stalled = stalled && !converged;
 
     JunctionSolution solution;
     solution.A.resize(N);
