@@ -14,6 +14,7 @@ set(HEMO1D_CORE_SOURCES
     dg/mesh.cpp
     io/network_parser.cpp
     physics/compatibility.cpp
+    physics/spatial_operator.cpp
 )
 
 if(NOT HEMO1D_CORE_SOURCES)

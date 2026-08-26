@@ -21,6 +21,8 @@ public:
 
     const DenseMatrix& massMatrix() const noexcept { return massMatrix_; }
 
+    const DenseMatrix& massMatrixInverse() const noexcept { return massMatrixInverse_; }
+
     const QuadratureRule& quadrature() const noexcept { return quadrature_; }
 
     const DenseMatrix& basisAtQuadrature() const noexcept { return basisAtQuadrature_; }
