@@ -11,6 +11,7 @@ set(HEMO1D_TEST_SOURCES
     test_mesh.cpp
     test_network_parser.cpp
     test_spatial_operator.cpp
+    test_cfl.cpp
 )
 
 if(NOT HEMO1D_TEST_SOURCES)
