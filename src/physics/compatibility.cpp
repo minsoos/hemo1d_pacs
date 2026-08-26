@@ -4,7 +4,7 @@
  
 namespace hemo1d::physics {
  
-LeftEigenvectors computeLeftEigenvectorscomputeLeftEigenvectors(Real A, Real Q, Real A0,
+LeftEigenvectors computeLeftEigenvectors(Real A, Real Q, Real A0,
                     Real beta, Real alpha, Real rho, const TubeLaw& tubelaw){
     const Real u = Q / A;
     const Characteristics c = computeCharacteristics(A, Q, A0, beta, alpha, rho, tubelaw);
