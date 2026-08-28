@@ -16,6 +16,7 @@ set(HEMO1D_CORE_SOURCES
     physics/compatibility.cpp
     physics/spatial_operator.cpp
     physics/cfl.cpp
+    physics/slope_limiter.cpp
 )
 
 if(NOT HEMO1D_CORE_SOURCES)
