@@ -7,9 +7,15 @@ set(HEMO1D_CORE_SOURCES
     core/vessel.cpp
     io/time_series.cpp
     core/linear_algebra.cpp
+    dg/quadrature.cpp
+    dg/nodal_basis.cpp
+    dg/reference_element.cpp
+    dg/element.cpp
+    dg/mesh.cpp
     io/network_parser.cpp
     physics/compatibility.cpp
     physics/exterior_boundary.cpp
+    physics/junction_solver.cpp
 )
 
 if(NOT HEMO1D_CORE_SOURCES)
