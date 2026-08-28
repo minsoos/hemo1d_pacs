@@ -14,6 +14,7 @@ set(HEMO1D_CORE_SOURCES
     dg/mesh.cpp
     io/network_parser.cpp
     physics/compatibility.cpp
+    physics/exterior_boundary.cpp
     physics/junction_solver.cpp
 )
 

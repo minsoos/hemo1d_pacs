@@ -10,6 +10,7 @@ set(HEMO1D_TEST_SOURCES
     test_reference_element.cpp
     test_mesh.cpp
     test_network_parser.cpp
+    test_exterior_boundary.cpp
     test_junction_solver.cpp
 )
 
