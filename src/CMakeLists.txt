@@ -20,6 +20,7 @@ set(HEMO1D_CORE_SOURCES
     physics/solver.cpp
     physics/exterior_boundary.cpp
     physics/junction_solver.cpp
+    physics/boundary_solver.cpp
 )
 
 if(NOT HEMO1D_CORE_SOURCES)
