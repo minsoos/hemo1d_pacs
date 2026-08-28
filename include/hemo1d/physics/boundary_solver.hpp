@@ -21,6 +21,9 @@ private:
 
     std::unordered_map<Id, io::TimeSeries> prescribedSeries_; // keyed by node id
 
+    std::unordered_map<Id, std::array<std::pair<Real, Real>, 2>> ghostState_;
+
+
 public:
     BoundarySolver(const Network& network, const dg::Mesh& mesh, const TubeLaw& tubeLaw,
                       FluidProperties fluid);
