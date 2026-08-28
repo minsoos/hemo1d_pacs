@@ -13,6 +13,7 @@ set(HEMO1D_TEST_SOURCES
     test_spatial_operator.cpp
     test_cfl.cpp
     test_slope_limiter.cpp
+    test_solver.cpp
 )
 
 if(NOT HEMO1D_TEST_SOURCES)
