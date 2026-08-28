@@ -15,6 +15,7 @@ using Id = std::size_t;
  
 inline constexpr Id kInvalidId = std::numeric_limits<Id>::max();
  
- 
+inline constexpr Index kMaxElementDofs = 32;
+
 } // namespace hemo1d
  

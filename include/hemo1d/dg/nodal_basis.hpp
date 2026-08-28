@@ -19,7 +19,7 @@ public:
 
     std::vector<Real> evaluateDerivative(Real x) const;
 
-    const DenseMatrix differentiationMatrix() const noexcept { return diffMatrix_; }
+    const DenseMatrix& differentiationMatrix() const noexcept { return diffMatrix_; }
 
 private:
     void computeBarycentricWeights();

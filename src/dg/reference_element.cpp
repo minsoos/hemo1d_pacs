@@ -13,7 +13,7 @@ NodalBasis makeGllBasis(unsigned order) {
 } // namespace
 
 ReferenceElement::ReferenceElement(unsigned order)
-    : basis_(makeGllBasis(order)), quadrature_(gaussLegendre(order)) {
+    : basis_(makeGllBasis(order)), quadrature_(gaussLegendre(order + 1)) {
     
     const Index n = basis_.numNodes();
     const Index nq = quadrature_.points.size();

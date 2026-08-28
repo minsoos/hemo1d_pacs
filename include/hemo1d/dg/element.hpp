@@ -29,7 +29,7 @@ public:
 
     const ReferenceElement& referenceElement() const noexcept { return *referenceElement_; }
     unsigned order() const noexcept { return referenceElement_->order(); }
-    Index numNodes() const noexcept { return referenceElement_->numNodes(); }
+    Index numDofs() const noexcept { return referenceElement_->numNodes(); }
     Index dofOffset() const noexcept { return dofOffset_; }
 
     const VesselParameters& vesselParameters() const noexcept { return vesselParameters_; }
