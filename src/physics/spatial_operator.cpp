@@ -10,14 +10,15 @@
 namespace hemo1d::physics {
 
 SpatialOperator::SpatialOperator(
-    const dg::Mesh& mesh, FluidProperties fluid, const TubeLaw& tubeLaw,
-    const NumericalFlux& flux, const BoundaryStateProvider& boundaryProvider
+    const dg::Mesh& mesh, FluidProperties fluid,
+    const TubeLaw& tubeLaw, const NumericalFlux& flux,
+    const BoundaryStateProvider& boundaryProvider
 )
     : mesh_(mesh),
     fluid_(fluid),
     tubeLaw_(tubeLaw),
     flux_(flux),
-    boundaryProvider_(boundaryProvider)
+    boundaryProvider_(boundaryProvider) 
 {
     for (const dg::Element& el : mesh_.elements()) {
         if (el.numDofs() > kMaxElementDofs) {
@@ -28,11 +29,7 @@ SpatialOperator::SpatialOperator(
     }
 }
 
-
-void SpatialOperator::evaluate(
-    const State& u, Real time, State& dudt
-) const {
-
+void SpatialOperator::evaluate(const State& u, Real time, State& dudt) const {
     const std::vector<dg::Element>& elements = mesh_.elements();
     const Index numElements = elements.size();
 
@@ -68,21 +65,18 @@ void SpatialOperator::evaluate(
         }
 
         const auto [leftFluxA, leftFluxQ] = flux_.compute(
-            outsideLeft.first, outsideLeft.second, Al, Ql, p.A0, p.beta, p.alpha, fluid_.density, tubeLaw_
-        );
-
+            outsideLeft.first, outsideLeft.second, Al, Ql, p.A0, p.beta, p.alpha, fluid_.density, tubeLaw_);
         const auto [rightFluxA, rightFluxQ] = flux_.compute(
-            outsideRight.first, outsideRight.second, Al, Ql, p.A0, p.beta, p.alpha, fluid_.density, tubeLaw_
-        );
+            Ar, Qr, outsideRight.first, outsideRight.second, p.A0, p.beta, p.alpha, fluid_.density, tubeLaw_);
 
         const dg::ReferenceElement& ref = el.referenceElement();
         const dg::QuadratureRule& quad = ref.quadrature();
         const DenseMatrix& L = ref.basisAtQuadrature();
-        const DenseMatrix& dl = ref.basisDerivativeAtQuadrature();
+        const DenseMatrix& dL = ref.basisDerivativeAtQuadrature();
         const Index nq = quad.points.size();
 
-        std::vector<Real> rhsA(n, 0.0);
-        std::vector<Real> rhsQ(n, 0.0);
+        std::array<Real, kMaxElementDofs> rhsA{};
+        std::array<Real, kMaxElementDofs> rhsQ{};
 
         for (Index q = 0; q < nq; ++q) {
             Real Aq = 0.0;
@@ -91,13 +85,12 @@ void SpatialOperator::evaluate(
                 Aq += L(q, i) * u.A[offset + i];
                 Qq += L(q, i) * u.Q[offset + i];
             }
-            
             const auto [fA, fQ] = physicalFlux(Aq, Qq, p.A0, p.beta, p.alpha, fluid_.density, tubeLaw_);
             const Real sourceQ = -p.frictionKr * Qq / Aq;
             const Real w = quad.weights[q];
             for (Index i = 0; i < n; ++i) {
-                rhsA[i] += w * fA * dl(q, i);
-                rhsQ[i] += w * fQ * dl(q, i) + J * w * sourceQ * L(q, i);
+                rhsA[i] += w * fA * dL(q, i);
+                rhsQ[i] += w * fQ * dL(q, i) + J * w * sourceQ * L(q, i);
             }
         }
 
@@ -117,9 +110,7 @@ void SpatialOperator::evaluate(
             dudt.A[offset + i] = dA / J;
             dudt.Q[offset + i] = dQ / J;
         }
-
     }
-
 }
 
 } // namespace hemo1d::physics
