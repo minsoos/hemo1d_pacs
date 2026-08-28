@@ -20,7 +20,7 @@ struct TraceData{
 };
 
 const TraceData traceAndDerivative(const dg::Element& el, VesselEnd end, const State& state){
-    const Index n = el.numNodes(); //Dofs
+    const Index n = el.numDofs(); //Dofs
     const Index offset = el.dofOffset();
     const Index nodeIdx = (end==VesselEnd::Proximal) ? 0 : n-1;
     const DenseMatrix& D = el.referenceElement().differentiationMatrix();

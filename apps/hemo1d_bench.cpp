@@ -3,7 +3,7 @@
 //      (used to calibrate hemo1d::kOmpParallelThreshold,
 //      include/hemo1d/core/parallel.hpp).
 //   2. A full Solver::step() on a realistic Y-bifurcation network, broken
-//      down by component (SpatialOperator, MinmodLimiter, BoundaryResolver,
+//      down by component (SpatialOperator, MinmodLimiter, BoundarySolver,
 //      the RK combine loops), to find which part of a real timestep
 //      actually dominates wall-clock time.
 //
@@ -15,7 +15,7 @@
 #include <vector>
  
 #include "hemo1d/dg/mesh.hpp"
-#include "hemo1d/physics/boundary_resolver.hpp"
+#include "hemo1d/physics/boundary_solver.hpp"
 #include "hemo1d/physics/flux.hpp"
 #include "hemo1d/physics/slope_limiter.hpp"
 #include "hemo1d/physics/solver.hpp"
@@ -213,15 +213,15 @@ StepBreakdown benchmarkStep(Index elementsPerVessel, int repeats) {
     LinearElasticTubeLaw law;
     HllFlux flux;
     MinmodLimiter limiter;
-    BoundaryResolver resolver(network, mesh, law, network.fluid());
-    resolver.resolve(u, 0.0, 1e-5);
+    BoundarySolver resolver(network, mesh, law, network.fluid());
+    resolver.solve(u, 0.0, 1e-5);
     Solver solver(mesh, network.fluid(), law, flux, resolver, &limiter);
  
     const Real dt = 1e-5;
  
     // Warm-up.
     for (int i = 0; i < 3; ++i) {
-        resolver.resolve(u, 0.0, dt);
+        resolver.solve(u, 0.0, dt);
         solver.step(u, 0.0, dt);
     }
  
@@ -233,7 +233,7 @@ StepBreakdown benchmarkStep(Index elementsPerVessel, int repeats) {
     {
         const auto start = std::chrono::steady_clock::now();
         for (int i = 0; i < repeats; ++i) {
-            resolver.resolve(u, 0.0, dt);
+            resolver.solve(u, 0.0, dt);
             solver.step(u, 0.0, dt);
         }
         result.totalStepMs = msSince(start) / repeats;
@@ -247,7 +247,7 @@ StepBreakdown benchmarkStep(Index elementsPerVessel, int repeats) {
         double spatialMs = 0.0, limiterMsAcc = 0.0, combineMsAcc = 0.0, resolveMs = 0.0;
         for (int i = 0; i < repeats; ++i) {
             auto t0 = std::chrono::steady_clock::now();
-            resolver.resolve(u, 0.0, dt);
+            resolver.solve(u, 0.0, dt);
             resolveMs += msSince(t0);
  
             t0 = std::chrono::steady_clock::now();
