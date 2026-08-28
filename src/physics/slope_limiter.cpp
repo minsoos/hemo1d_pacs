@@ -83,13 +83,13 @@ void MinmodLimiter::apply(State& state, const dg::Mesh& mesh) const {
     std::vector<Real> avgA(numElements);
     std::vector<Real> avgQ(numElements);
 
-# pragma omp parallel for if (numElements >= kOmpParallelThreshold)
+# pragma omp parallel for if (numElements >= kOmpParallelThresholdLight)
     for (Index e = 0; e < numElements; ++e) {
         avgA[e] = cellAverage(elements[e], state.A);
         avgQ[e] = cellAverage(elements[e], state.Q);
     }
 
-#pragma omp parallel for if (numElements >= kOmpParallelThreshold)
+#pragma omp parallel for if (numElements >= kOmpParallelThresholdLight)
     for (Index e = 0; e < numElements; ++e) {
         const dg::Element& el = elements[e];
         const std::optional<Index> leftIdx = el.leftNeighbor();

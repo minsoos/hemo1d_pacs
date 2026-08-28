@@ -22,7 +22,7 @@ void Solver::step(State& u, Real time, Real dt) const {
 
     operatorL_.evaluate(u, time, k1_);
 
-#pragma omp parallel for if (n >= kOmpParallelThreshold)
+#pragma omp parallel for if (n >= kOmpParallelThresholdLight)
     for (Index i = 0; i < n; ++i) {
         stage_.A[i] = u.A[i] + dt * k1_.A[i];
         stage_.Q[i] = u.Q[i] + dt * k1_.Q[i];
@@ -31,7 +31,7 @@ void Solver::step(State& u, Real time, Real dt) const {
 
     operatorL_.evaluate(stage_, time + dt, k2_);
 
-#pragma omp parallel for if (n >= kOmpParallelThreshold)
+#pragma omp parallel for if (n >= kOmpParallelThresholdLight)
     for (Index i = 0; i < n; ++i) {
         u.A[i] += 0.5 * dt * (k1_.A[i] + k2_.A[i]);
         u.Q[i] += 0.5 * dt * (k1_.Q[i] + k2_.Q[i]);
