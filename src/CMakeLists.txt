@@ -18,6 +18,8 @@ set(HEMO1D_CORE_SOURCES
     physics/cfl.cpp
     physics/slope_limiter.cpp
     physics/solver.cpp
+    physics/exterior_boundary.cpp
+    physics/junction_solver.cpp
 )
 
 if(NOT HEMO1D_CORE_SOURCES)

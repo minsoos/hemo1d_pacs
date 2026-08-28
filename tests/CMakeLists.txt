@@ -14,6 +14,8 @@ set(HEMO1D_TEST_SOURCES
     test_cfl.cpp
     test_slope_limiter.cpp
     test_solver.cpp
+    test_exterior_boundary.cpp
+    test_junction_solver.cpp
 )
 
 if(NOT HEMO1D_TEST_SOURCES)
