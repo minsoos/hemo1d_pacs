@@ -22,6 +22,7 @@ set(HEMO1D_CORE_SOURCES
     physics/junction_solver.cpp
     physics/boundary_solver.cpp
     output/probe.cpp
+    output/vtk_writer.cpp
 )
 
 if(NOT HEMO1D_CORE_SOURCES)
