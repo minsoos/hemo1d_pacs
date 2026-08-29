@@ -12,7 +12,7 @@ namespace{
 
 const dg::Element& boundaryElement(const dg::Mesh& mesh, Id vesselId, VesselEnd end){
     const auto [begin_, end_] = mesh.vesselElementRange(vesselId);
-    return (end == VesselEnd::Proximal) ? mesh.elements()[begin_] : mesh.elements()[end_];
+    return (end == VesselEnd::Proximal) ? mesh.elements()[begin_] : mesh.elements()[end_-1];
 }
 
 struct TraceData{
@@ -28,7 +28,7 @@ const TraceData traceAndDerivative(const dg::Element& el, VesselEnd end, const S
     Real dAdr = 0.0, dQdr = 0.0;
     for (Index j=0; j<n; ++j){
         dAdr += D(nodeIdx, j) * state.A[offset+j];
-        dAdr += D(nodeIdx, j) * state.Q[offset+j];
+        dQdr += D(nodeIdx, j) * state.Q[offset+j];
     }
     const Real invJ = 1.0 / el.jacobian();
     return {state.A[offset+nodeIdx], state.Q[offset+nodeIdx], dAdr*invJ, dQdr+invJ};
