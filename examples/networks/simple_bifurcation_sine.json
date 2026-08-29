@@ -1,0 +1,81 @@
+{
+  "_description": "Y-shaped single-bifurcation network with a sine",
+  "fluid": {
+    "density": 1.055,
+    "viscosity": 0.045
+  },
+  "vessels": [
+    {
+      "id": 1,
+      "name": "Omega1",
+      "length": 1.0,
+      "A0": 0.126,
+      "beta": 606060.0,
+      "alpha": 1.3333333333,
+      "n_elements": 32
+    },
+    {
+      "id": 2,
+      "name": "Omega2",
+      "length": 1.0,
+      "A0": 0.126,
+      "beta": 606060.0,
+      "alpha": 1.3333333333,
+      "n_elements": 32
+    },
+    {
+      "id": 3,
+      "name": "Omega3",
+      "length": 2.0,
+      "A0": 0.126,
+      "beta": 606060.0,
+      "alpha": 1.3333333333,
+      "n_elements": 64
+    }
+  ],
+  "nodes": [
+    {
+      "id": 1,
+      "name": "inlet",
+      "connections": [
+        { "vessel": 1, "end": "proximal" }
+      ],
+      "boundary_condition": {
+        "type": "prescribed",
+        "quantity": "flow",
+        "csv_file": "data/inlet_flow_sine.csv"
+      }
+    },
+    {
+      "id": 2,
+      "name": "bifurcation",
+      "connections": [
+        { "vessel": 1, "end": "distal" },
+        { "vessel": 2, "end": "proximal" },
+        { "vessel": 3, "end": "proximal" }
+      ],
+      "bifurcation_angles_rad": [0.7853981634, 1.0471975512]
+    },
+    {
+      "id": 3,
+      "name": "outlet_2",
+      "connections": [
+        { "vessel": 2, "end": "distal" }
+      ],
+      "boundary_condition": {
+        "type": "non_reflecting"
+      }
+    },
+    {
+      "id": 4,
+      "name": "outlet_3",
+      "connections": [
+        { "vessel": 3, "end": "distal" }
+      ],
+      "boundary_condition": {
+        "type": "non_reflecting"
+      }
+    }
+  ]
+}
+ 
