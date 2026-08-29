@@ -16,6 +16,22 @@ QUANTITIES = [
 ]
 
 
+##### EXAMPLE WITH RAMP AREA #####
+# EXAMPLE_PARAMS = {
+#     "network": "simple_bifurcation.json",
+#     "target_time": 3e-3,
+#     "output": "out_ramp_area"
+# }
+
+##### EXAMPLE WITH SINE FLOW RATE #####
+EXAMPLE_PARAMS = {
+    "network": "simple_bifurcation_sine.json",
+    "target_time": 0.3,
+    "output": "out_sine_flow"
+}
+
+
+
 def vessel_of(probe_name):
     return probe_name.rsplit("_", 1)[0] if "_" in probe_name else probe_name
 
@@ -52,11 +68,11 @@ def plot_probes(sim, probe_names, output_dir, title_prefix):
 
 
 def main():
-    output_dir = sys.argv[1] if len(sys.argv) > 1 else os.path.join(THIS_DIR, "out")
+    output_dir = sys.argv[1] if len(sys.argv) > 1 else os.path.join(THIS_DIR, EXAMPLE_PARAMS["output"])
     os.makedirs(output_dir, exist_ok=True)
 
     ##### LOAD NETWORK #####
-    network_path = os.path.join(THIS_DIR, "networks", "simple_bifurcation.json")
+    network_path = os.path.join(THIS_DIR, "networks", EXAMPLE_PARAMS["network"])
     network = hemo1d.load_network(network_path)
     print(f"Loaded network: {network.vessel_count} vessels, {network.node_count} nodes.")
 
@@ -79,7 +95,7 @@ def main():
 
     ##### SET SIM PARAMS #####
     dt = 5e-6
-    target_time = 3e-3
+    target_time = EXAMPLE_PARAMS["target_time"]
     vtk_dir = os.path.join(output_dir, "vtk")
 
     ##### RUN SIMULATION #####
