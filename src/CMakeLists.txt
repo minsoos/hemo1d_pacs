@@ -23,6 +23,7 @@ set(HEMO1D_CORE_SOURCES
     physics/boundary_solver.cpp
     output/probe.cpp
     output/vtk_writer.cpp
+    simulation.cpp
 )
 
 if(NOT HEMO1D_CORE_SOURCES)

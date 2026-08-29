@@ -19,6 +19,7 @@ set(HEMO1D_TEST_SOURCES
     test_boundary_solver.cpp
     test_probe.cpp
     test_vtk_writer.cpp
+    test_simulation.cpp
 )
 
 if(NOT HEMO1D_TEST_SOURCES)
