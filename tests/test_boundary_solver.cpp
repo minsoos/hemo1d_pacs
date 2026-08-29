@@ -98,7 +98,7 @@ TEST_CASE("BoundarySolver: Example implementtion",
     DgSettings settings;
     settings.defaultPolynomialOrder = 1;
     const Mesh mesh(network, settings);
- 
+    
     State state(mesh.totalDofs());
     for (const Element& el : mesh.elements()) {
         for (Index i = 0; i < el.numDofs(); ++i) {
@@ -106,13 +106,13 @@ TEST_CASE("BoundarySolver: Example implementtion",
             state.Q[el.dofOffset() + i] = 0.0;
         }
     }
- 
+
     LinearElasticTubeLaw law;
     HllFlux flux;
     MinmodLimiter limiter;
     BoundarySolver bSolver(network, mesh, law, FluidProperties{});
     Solver solver(mesh, FluidProperties{}, law, flux, bSolver, &limiter);
- 
+
     Real time = 0.0;
     const Real dt = 5e-6;
     for (int step = 0; step < 20; ++step) {
