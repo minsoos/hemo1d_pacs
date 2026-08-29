@@ -14,3 +14,4 @@ out_*/
 !inlet_area_ramp.csv
 !outlet_area_constant.csv
 !inlet_flow_sine.csv
+.vscode
