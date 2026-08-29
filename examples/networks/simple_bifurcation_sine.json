@@ -42,7 +42,7 @@
       ],
       "boundary_condition": {
         "type": "prescribed",
-        "quantity": "flow",
+        "quantity": "flow_rate",
         "csv_file": "data/inlet_flow_sine.csv"
       }
     },
