@@ -15,3 +15,5 @@ out_*/
 !outlet_area_constant.csv
 !inlet_flow_sine.csv
 .vscode
+__pycache__
+convergence/output/_generated
