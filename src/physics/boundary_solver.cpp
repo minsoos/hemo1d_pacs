@@ -31,7 +31,7 @@ const TraceData traceAndDerivative(const dg::Element& el, VesselEnd end, const S
         dQdr += D(nodeIdx, j) * state.Q[offset+j];
     }
     const Real invJ = 1.0 / el.jacobian();
-    return {state.A[offset+nodeIdx], state.Q[offset+nodeIdx], dAdr*invJ, dQdr+invJ};
+    return {state.A[offset+nodeIdx], state.Q[offset+nodeIdx], dAdr*invJ, dQdr*invJ};
 }
 
 } // namespace
