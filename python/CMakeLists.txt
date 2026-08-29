@@ -1,13 +1,10 @@
-find_package(pybind11 CONFIG QUIET)
-if(NOT pybind11_FOUND)
-    include(FetchContent)
-    FetchContent_Declare(
-        pybind11
-        GIT_REPOSITORY https://github.com/pybind/pybind11.git
-        GIT_TAG v2.13.6
-    )
-    FetchContent_MakeAvailable(pybind11)
-endif()
+include(FetchContent)
+FetchContent_Declare(
+    pybind11
+    GIT_REPOSITORY https://github.com/pybind/pybind11.git
+    GIT_TAG v2.13.6
+)
+FetchContent_MakeAvailable(pybind11)
  
 pybind11_add_module(hemo1d_py bindings.cpp)
 target_link_libraries(hemo1d_py PRIVATE hemo1d_core)
