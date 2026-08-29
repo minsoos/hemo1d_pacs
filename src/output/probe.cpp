@@ -78,7 +78,7 @@ void ProbeRecorder::writeCsv(const std::filesystem::path& directory) const {
         if (!file){
             throw std::runtime_error("ProbeRecorder: writeCsv: cannot open csv for '" + probes_[i].name() + "'");
         }
-        file << "time,area,flowrate,pressure,velocity\n";
+        file << "time,area,flow_rate,pressure,velocity\n";
         for (const ProbeSample& s : history_[i]){
             file << s.time << ',' << s.A << ',' << s.Q  << ',' << s.pressure << ',' <<
                 s.velocity << '\n';

@@ -32,6 +32,7 @@ std::vector<Node> nodes{
 };
 return Network(FluidProperties{}, std::move(vessels), std::move(nodes));
 }
+} // namespace
 
 TEST_CASE("Probe: Single vessel with a prescribed inlet and stays stable",
           "[probe]") {
@@ -57,4 +58,34 @@ TEST_CASE("Probe: Single vessel with a prescribed inlet and stays stable",
 
 }
 
-} // namespace
+TEST_CASE("ProbeRecorder: writeCsv: writes one file per probe with a header", "[probe]") {
+    const Network network = makeSingleVesselNetwork();
+    const Mesh mesh(network);
+
+    State state(mesh.totalDofs());
+    for (Index i=0; i<state.size(); ++i) {
+        state.A[i] = 0.126;
+        state.Q[i] = 0.02;
+    }
+
+    ProbeRecorder recorder;
+    recorder.addProbe("outlet", 1, 4.0, mesh);
+    LinearElasticTubeLaw law;
+    recorder.record(state, 0.0, law);
+
+    const std::filesystem::path dir =
+        std::filesystem::temp_directory_path() / "hemo1d_test_probe_csv";
+    std::filesystem::create_directories(dir);
+    recorder.writeCsv(dir);
+
+    const std::filesystem::path csvPath = dir / "outlet.csv";
+    REQUIRE(std::filesystem::exists(csvPath));
+    
+    std::ifstream file(csvPath);
+    std::string header;
+    std::getline(file, header);
+    CHECK(header == "time,area,flow_rate,pressure,velocity");
+    std::string dataLine;
+    REQUIRE(std::getline(file, dataLine));
+    CHECK_FALSE(dataLine.empty());
+}
