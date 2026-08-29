@@ -18,6 +18,7 @@ set(HEMO1D_TEST_SOURCES
     test_junction_solver.cpp
     test_boundary_solver.cpp
     test_probe.cpp
+    test_vtk_writer.cpp
 )
 
 if(NOT HEMO1D_TEST_SOURCES)
