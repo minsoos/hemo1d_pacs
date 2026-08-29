@@ -11,9 +11,10 @@ namespace {
 
 const dg::Element& locateElement(Id vesselId, Real z, const dg::Mesh& mesh, Real& referenceCoordinate){
     const auto [begin, end] = mesh.vesselElementRange(vesselId);
+    constexpr Real kTolerance = 1e-9;
     for (Index e=begin; e<end; ++e){
         const dg::Element& el = mesh.elements()[e];
-        if (z > el.zLeft() && el.zRight()){
+        if (z > el.zLeft() -kTolerance && el.zRight() + kTolerance){
             Real r = 2.0 * (z-el.zLeft()) / el.length() - 1.0;
             r = std::clamp(r, -1.0, 1.0);
             referenceCoordinate = r;
