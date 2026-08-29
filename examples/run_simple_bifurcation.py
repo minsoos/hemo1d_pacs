@@ -56,7 +56,7 @@ def main():
     os.makedirs(output_dir, exist_ok=True)
 
     ##### LOAD NETWORK #####
-    network_path = os.path.join(THIS_DIR, "networks", "simple_bifurcation_sine.json")
+    network_path = os.path.join(THIS_DIR, "networks", "simple_bifurcation.json")
     network = hemo1d.load_network(network_path)
     print(f"Loaded network: {network.vessel_count} vessels, {network.node_count} nodes.")
 
@@ -74,7 +74,7 @@ def main():
     sim.add_probe("omega1_mid", vessel_id=1, z=0.5)
     sim.add_probe("omega2_mid", vessel_id=2, z=0.5)
     sim.add_probe("omega3_mid", vessel_id=3, z=1.0)
-    sim.add_probe("omega2_outlet", vessel_id=3, z=0.95)
+    sim.add_probe("omega2_outlet", vessel_id=2, z=0.95)
     sim.add_probe("omega3_outlet", vessel_id=3, z=1.95)
 
     ##### SET SIM PARAMS #####
@@ -93,13 +93,7 @@ def main():
     print(f"VTK time series written to {vtk_dir} (open {os.path.join(vtk_dir, 'hemo1d.pvd')} in ParaView)")
 
     ##### PLOT PROBES #####
-    probe_names = ["omega1_inlet", "omega1_mid", "omega2_mid", "omega3_mid", "omega3_outlet"]
-    print("\nLast recorded sample at each probe:")
-    for name in probe_names:
-        s = sim.probe_samples(name)[-1]
-        print(f"  {name:15s} t={s.time:.6f}  A={s.area:.6f}  Q={s.flow_rate:+.6f}  "
-              f"P={s.pressure:+.4f}  u={s.velocity:+.4f}")
-
+    probe_names = ["omega1_inlet", "omega1_mid", "omega2_mid", "omega2_outlet", "omega3_mid", "omega3_outlet"]
     plot_probes(sim, probe_names, output_dir, title_prefix="Hemo1D probes: simple bifurcation")
 
 
