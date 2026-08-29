@@ -4,6 +4,7 @@ project(Hemo1D LANGUAGES CXX)
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
+set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
  
 if(NOT CMAKE_BUILD_TYPE)
@@ -11,6 +12,7 @@ if(NOT CMAKE_BUILD_TYPE)
 endif()
  
 option(HEMO1D_BUILD_TESTS "Build Hemo1D tests" ON)
+option(HEMO1D_BUILD_PYTHON "Build Python bindings (requires pybind11 + a matching Python)" ON)
  
 include(FetchContent)
  
@@ -29,4 +31,16 @@ add_subdirectory(apps)
 if(HEMO1D_BUILD_TESTS)
     enable_testing()
     add_subdirectory(tests)
+endif()
+
+if(HEMO1D_BUILD_PYTHON)
+    find_package(Python3 COMPONENTS Interpreter Development QUIET)
+    if(Python3_FOUND)
+        add_subdirectory(python)
+    else()
+        message(STATUS 
+            "HEMO1D_BUILD_PYTHON is ON but no Python3 development environment "
+            "(interpreter + headers/libs) was found; skipping the Python bindings."
+        )
+    endif()
 endif()
