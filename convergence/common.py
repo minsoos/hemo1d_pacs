@@ -69,7 +69,8 @@ def record_steps_for(dt):
 
 # %% Directories
 CONVERGENCE_DIR = os.path.dirname(os.path.abspath(__file__))
-SUBDIR = "bifurcation"
+SPATIAL_SUBDIR     = "spatial"
+BIFURCATION_SUBDIR = "bifurcation"
 OUTPUT_DIR      = os.path.join(CONVERGENCE_DIR, "output")
 GENERATED_DIR   = os.path.join(OUTPUT_DIR, "_generated")
 PULSE_CSV_NAME  = "inlet_pulse.csv"
@@ -82,10 +83,10 @@ def format_case_name(p, h):
 
 
 # %% Convergence refinement parameters
-SPATIAL_P_LIST   = [1, 2]
+P_LIST   = [1, 2]
 LENGTH = 4.0
-SPATIAL_H_LIST = tuple(1/np.pow(2,np.arange(3,7))) ##9
-SPATIAL_DT       = BASE_DT_INTERVAL / 384
+H_LIST = tuple(1/np.pow(2,np.arange(3,9))) ##
+DT       = BASE_DT_INTERVAL / 384
 
 
 FIELD_CSV_COLUMNS = ["snapshot_index", "snapshot_time", "element_index",
@@ -154,7 +155,6 @@ def write_network_json(path, h, polynomial_order, pulse_csv_name):
 
 
 # %% Y-shape network
-BIFURCATION_H_LEVELS = tuple(1/np.pow(2,np.arange(3,9)))
 BIFURCATION_PARENT_LENGTH   = 1.0
 BIFURCATION_DAUGHTER_LENGTH = 2.0
 

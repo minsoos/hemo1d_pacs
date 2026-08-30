@@ -73,27 +73,27 @@ def run_case(study, case_name, network_path, p, dt, h, lengths):
 
 
 def run_bifurcation_cases():
-    for p in c.SPATIAL_P_LIST:
-        for h in c.BIFURCATION_H_LEVELS:
+    for p in c.P_LIST:
+        for h in c.H_LIST:
             name = c.format_case_name(p, h)
             path = os.path.join(c.GENERATED_DIR, name + ".json")
             c.write_bifurcation_network_json(path, h, p, c.PULSE_CSV_NAME)
-            c.check_cfl(c.SPATIAL_DT, h, p, f"bifurcation/{name}")
-            run_case("bifurcation", name, path, p, c.SPATIAL_DT, h, 
+            c.check_cfl(c.DT, h, p, f"{c.BIFURCATION_SUBDIR}/{name}")
+            run_case(c.BIFURCATION_SUBDIR, name, path, p, c.DT, h, 
                      [c.BIFURCATION_PARENT_LENGTH, c.BIFURCATION_DAUGHTER_LENGTH, c.BIFURCATION_DAUGHTER_LENGTH])
 
 def run_single_cases():
-    for p in c.SPATIAL_P_LIST:    
-        for h in c.SPATIAL_H_LIST:
+    for p in c.P_LIST:    
+        for h in c.H_LIST:
             name = c.format_case_name(p, h)
             network_path = write_network(name+".json", h, p)
-            run_case("spatial", name, network_path, p, c.SPATIAL_DT, h, [c.LENGTH,])
+            run_case(c.SPATIAL_SUBDIR, name, network_path, p, c.DT, h, [c.LENGTH,])
             
 
 def main():
     write_pulse()
     run_single_cases()  
-    # run_bifurcation_cases()
+    run_bifurcation_cases()
     
 
 # def main():
@@ -101,7 +101,7 @@ def main():
 #     name = f"Y-p{p}_h{h:g}".replace(".", "p")     # p1_h0p125
 #     network_path = os.path.join(c.GENERATED_DIR, name + ".json")
 #     c.write_bifurcation_network_json(network_path, h, p, c.PULSE_CSV_NAME)
-#     run_case("bifurcation", name, network_path, p, c.SPATIAL_DT, h)
+#     run_case("bifurcation", name, network_path, p, c.DT, h)
 
 
 if __name__ == "__main__":

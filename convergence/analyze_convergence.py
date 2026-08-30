@@ -13,10 +13,10 @@ from matplotlib.ticker import NullFormatter
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import common as c
 
+STUDY = c.SPATIAL_SUBDIR
 QUANTITY = "flow_rate"
 _QUANTITY_INDEX = {"area": 0, "flow_rate": 1}[QUANTITY]
 
-GAUSS_ORDER = 6
 
 def load_case(case_dir):
     manifest = c.read_manifest(os.path.join(case_dir, "manifest.json"))
@@ -79,7 +79,7 @@ def field_for_vessel(elems):
     return PiecewiseField(n, length, elems, _QUANTITY_INDEX)
 
 def _field(h, p):
-    _, by_vessel = load_case(os.path.join(c.OUTPUT_DIR, c.SUBDIR, c.format_case_name(p,h)))
+    _, by_vessel = load_case(os.path.join(c.OUTPUT_DIR, STUDY, c.format_case_name(p,h)))
     return {vid: field_for_vessel(elems)
                       for vid, elems in by_vessel.items()}
 
@@ -126,7 +126,7 @@ def normalize_list(x):
 
 
 def main():
-    hs = c.SPATIAL_H_LIST[:-2]
+    hs = c.H_LIST[:-2]
 
     fig, ax = plt.subplots(figsize=(6, 5))
     ax.set_xticks(hs)
@@ -135,7 +135,7 @@ def main():
 
     print(f"{'p':>2} {'h':>10} {'error':>14} {'ratio':>8}")
     results = {}
-    for p in c.SPATIAL_P_LIST:
+    for p in c.P_LIST:
         hs_out, errs, per_h, order = analyze_convergence(p, hs)
         results[p] = (hs_out, errs, per_h, order)
 
@@ -160,21 +160,10 @@ def main():
     ax.grid(True, which="both", alpha=0.3)
     ax.legend()
     fig.tight_layout()
-    out = os.path.join(c.OUTPUT_DIR, f"spatial_order_{QUANTITY}.png")
+    out = os.path.join(c.OUTPUT_DIR, f"{STUDY}_order_{QUANTITY}.png")
     fig.savefig(out, dpi=150)
     print("wrote", out)
 
 if __name__ == "__main__":
     main()
-
-
-
-
-def build_network_fields_over_time(frames, vessel_specs, quantity_index):
-    return {
-        idx: {
-            vid: PiecewiseField(n, length, by_vessel[vid], quantity_index)
-                for vid, (n, length) in vessel_specs.items()
-        } for idx, by_vessel in frames.items()
-    }
 
