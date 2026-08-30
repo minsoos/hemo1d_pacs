@@ -21,23 +21,24 @@ GAUSS_ORDER = 6
 def load_case(case_dir):
     manifest = c.read_manifest(os.path.join(case_dir, "manifest.json"))
     last = manifest["num_snapshots"]
-    elems = {}
+    by_vessel = {}
     with open(os.path.join(case_dir, "field_snapshots.csv"), newline="") as f:
         for row in csv.DictReader(f):
             if int(row["snapshot_index"]) != last:
                 continue
-
+            vid = int(row["vessel_id"])
             e = int(row["element_index"])
-            elems.setdefault(e, []).append(
+            by_vessel.setdefault(vid, {}).setdefault(e, []).append(
                 (float(row["z"]), float(row["area"]), float(row["flow_rate"]))
             )
-    return manifest, elems
+    return manifest, by_vessel
 
 class PiecewiseField:
 
     def __init__(self, n_elements, length, elem_dict, quantity_index):
         self.n = n_elements
         self.h = length / n_elements
+        self.length = length
         sorted_eids = sorted(elem_dict.keys())
         assert len(sorted_eids) == n_elements, (
             f"expected {n_elements} elements, got {len(sorted_eids)}"
@@ -55,26 +56,38 @@ class PiecewiseField:
         idx = min(self.n-1, max(0, int(z/self.h)))
         return self.polys[idx](z)
 
-def l2_error(field_a, field_b, n_quad_elements, length, degree):
-    xi, w = np.polynomial.legendre.leggauss(degree+1)
-    h = length / n_quad_elements
-    total = 0.0
-    for k in range(n_quad_elements):
-        a = k*h
-        mid, half = a + 0.5*h, 0.5*h
-        for xi_i, w_i in zip(xi,w):
-            z = mid + half*xi_i
-            d = field_a(z) - field_b(z)
-            total += w_i * d * d * half
-    return math.sqrt(total)
+def l2_error(fields_a, fields_b, h, degree):
+    xi, w = np.polynomial.legendre.leggauss(degree + 1)
+    per_vessel = {}
+    for vid in sorted(fields_a):
+        fa, fb = fields_a[vid], fields_b[vid]
+        assert abs(fa.length - fb.length) < 1e-12, "l2_error: length mismatch"
+        n_quad = round(fa.length / h)
+        total = 0.0
+        for k in range(n_quad):
+            mid, half = k * h + 0.5 * h, 0.5 * h
+            for xi_i, w_i in zip(xi, w):
+                z = mid + half * xi_i
+                d = fa(z) - fb(z)
+                total += w_i * d * d * half
+        per_vessel[vid] = math.sqrt(total)
+    return per_vessel
 
-def _field(n,p):
-    _, elems = load_case(os.path.join(c.OUTPUT_DIR, "spatial", f"p{p}_n{n:04d}"))
-    return PiecewiseField(n, c.LENGTH, elems, _QUANTITY_INDEX)
+def field_for_vessel(elems):
+    n = len(elems)
+    length = max(z for pts in elems.values() for (z, _, _) in pts)
+    return PiecewiseField(n, length, elems, _QUANTITY_INDEX)
+
+def _field(h, p):
+    _, by_vessel = load_case(os.path.join(c.OUTPUT_DIR, c.SUBDIR, c.format_case_name(p,h)))
+    return {vid: field_for_vessel(elems)
+                      for vid, elems in by_vessel.items()}
 
 class Richardson:
     def __init__(self, fine_field, coarse_field, order):
+        assert fine_field.length==coarse_field.length, "Richardson: Fields must be same length"
         self.fine = fine_field
+        self.length = fine_field.length
         self.coarse = coarse_field
         self.factor = 1.0 / (2.0 ** order - 1.0)
 
@@ -82,24 +95,30 @@ class Richardson:
         uf = self.fine(z)
         uc = self.coarse(z)
         return uf + (uf-uc) * self.factor
+    
 
-def reference_field(n, p, order):
-    field_fine = _field(n*2, p)
-    field_coarse = _field(n, p)
-    return Richardson(field_fine, field_coarse, order)
+def reference_field(h, p, order):
+    fields_fine = _field(h/2, p)
+    fields_coarse = _field(h, p)
+    return {id: Richardson(fields_fine[id], fields_coarse[id], order) for id in
+        fields_fine}
 
 def loglog_order(hs, errs):
     return float(np.polyfit(np.log(np.array(hs[-3:])), np.log(np.array(errs[-3:])), 1)[0])
 
-def analyze_spatial(p, levels=(8,16,32)):
-    ref = reference_field(levels[-1]*2, p, order=p+1)
-    hs, errs = [],[]
+def global_norm(per_vessel):
+    return math.sqrt(sum(e * e for e in per_vessel.values()))
 
-    for n in levels:
-        field = _field(n, p)
-        hs.append(c.LENGTH / n)
-        errs.append(l2_error(field, ref, levels[-1]*(2)**2, c.LENGTH, p))
-    return hs, errs, loglog_order(hs, errs)
+def analyze_convergence(p, hs=(1/8,1/16,1/32)):
+    ref = reference_field(hs[-1]/2, p, order=p+1)
+    per_h = []
+
+    for h in hs:
+        field = _field(h, p)
+        per_h.append(l2_error(field, ref, hs[-1]/(2)**2, p))
+    errs  = [global_norm(d) for d in per_h]
+    return list(hs), errs, per_h, loglog_order(hs, errs)
+
 
 def normalize_list(x):
     x = np.array(x)
@@ -107,24 +126,34 @@ def normalize_list(x):
 
 
 def main():
-    levels = c.SPATIAL_N_LIST[:-2]
-    hs = c.LENGTH/np.array(levels)
+    hs = c.SPATIAL_H_LIST[:-2]
 
     fig, ax = plt.subplots(figsize=(6, 5))
     ax.set_xticks(hs)
     ax.set_xticklabels([f"{h:g}" for h in hs])
     ax.xaxis.set_minor_formatter(NullFormatter())
-    for q, style in [(2, "--"), (3, ":")]:
-        ax.loglog(hs, normalize_list(np.pow(hs,q)), style, label=f"x^{q}")
+
     print(f"{'p':>2} {'h':>10} {'error':>14} {'ratio':>8}")
+    results = {}
     for p in c.SPATIAL_P_LIST:
-        hs, errs, order = analyze_spatial(p, levels=levels)
+        hs_out, errs, per_h, order = analyze_convergence(p, hs)
+        results[p] = (hs_out, errs, per_h, order)
+
         for i, (h, e) in enumerate(zip(hs, errs)):
             ratio = errs[i-1] / e if i else float("nan")
             print(f"{p:>2} {h:>10.5f} {e:>14.6e} {ratio:>8.2f}")
+        for vid, e in sorted(per_h[-1].items()):
+            print(f"      vaso {vid}: {e:.6e}")
         print(f"   p={p}: observed order {order:.3f} (expected {p+1})\n")
-        ax.loglog(hs, normalize_list(errs), "o-", label=f"p={p} (order {order:.2f})")
+        ax.loglog(hs, errs, "o-", label=f"p={p} (order {order:.2f})")
 
+    for p, q, style in [(1, 2, "--"), (2, 3, ":")]:
+        hs_out, errs, _, _ = results[p]
+        h_ref, e_ref = hs_out[-1], errs[-1]
+        ax.loglog(hs_out, e_ref * (np.array(hs_out) / h_ref) ** q,
+                  style, color="0.5", lw=1, label=f"$h^{q}$")
+        print([f"{e:.3e}" for e in errs])
+        print([c.format_case_name(p, h) for h in hs])
 
     ax.set_xlabel("h [cm]")
     ax.set_ylabel(f"L2 error in {QUANTITY}")

@@ -20,3 +20,4 @@ convergence/output/_generated
 convergence/output/spatial
 *.png
 *_test.py
+convergence/output/bifurcation
