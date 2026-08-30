@@ -2,6 +2,8 @@ import os
 import math
 import json
 
+
+# %% Physic parameters ------------------------------------------
 RHO = 1.055
 VISCOSITY = 0.045
 A0 = 0.126
@@ -14,8 +16,9 @@ FRICTION_KR = 8.0 * math.pi * KINEMATIC_VISCOSITY
 
 C0 = math.sqrt(BETA * math.sqrt(A0) / (2.0 * RHO * A0))
 
-# sin^2 pulse
+# %% Pulses -----------------------------------------------------
 
+# sin^2 pulse
 PULSE_AMPLITUDE = 5.0
 PULSE_HALF_WIDTH = 4.0e-4
 PULSE_CENTER = 1.0e-3
@@ -28,6 +31,7 @@ def pulse_value(t):
     return PULSE_AMPLITUDE * math.sin( \
         math.pi * (t - PULSE_CENTER + PULSE_HALF_WIDTH) / (2 * PULSE_HALF_WIDTH))**2
 
+
 # gaussian pulse
 PULSE_AMPLITUDE = 5.0
 PULSE_SIGMA     = 2.0e-4
@@ -38,25 +42,6 @@ PULSE_CSV_DT    = 2.0e-7
 def pulse_value(t):
     return PULSE_AMPLITUDE * math.exp(-0.5 * ((t - PULSE_CENTER) / PULSE_SIGMA) ** 2)
 
-
-TARGET_TIME = 3.0e-3
-NUM_SNAPSHOTS = 100
-BASE_DT_INTERVAL = TARGET_TIME / NUM_SNAPSHOTS
-
-CONVERGENCE_DIR = os.path.dirname(os.path.abspath(__file__))
-OUTPUT_DIR      = os.path.join(CONVERGENCE_DIR, "output")
-GENERATED_DIR   = os.path.join(OUTPUT_DIR, "_generated")
-PULSE_CSV_NAME  = "inlet_pulse.csv"
-
-SPATIAL_P_LIST   = [1, 2]
-SPATIAL_N_LIST = [8, 16, 32, 64, 128, 256, 512]
-SPATIAL_N_REF    = 512
-SPATIAL_DT       = BASE_DT_INTERVAL / 384
-
-FIELD_CSV_COLUMNS = ["snapshot_index", "snapshot_time", "element_index",
-                     "vessel_id", "z", "area", "flow_rate"]
-
-
 def write_pulse_csv(path):
     n = round(PULSE_WINDOW / PULSE_CSV_DT)
     with open(path, "w") as f:
@@ -65,17 +50,10 @@ def write_pulse_csv(path):
             t = i*PULSE_CSV_DT
             f.write(f"{t:.9f}, {pulse_value(t):.8f}\n")
 
-def element_size(n_elements):
-    return LENGTH / n_elements
-
-def cfl_max_dt(h, p):
-    return h / ((2*p+1) * C0)
-
-def check_cfl(dt, h, p, label):
-    # dt margin
-    safe_dt = cfl_max_dt(h, p)
-    assert dt < safe_dt, f"{label}: dt: {dt:.4e} is bigger than cfl: {safe_dt:.4e}"
-    return dt / safe_dt
+# %% Time and snapshots
+TARGET_TIME = 3.0e-3
+NUM_SNAPSHOTS = 100
+BASE_DT_INTERVAL = TARGET_TIME / NUM_SNAPSHOTS
 
 def total_steps_for(dt):
     n = TARGET_TIME / dt
@@ -89,6 +67,41 @@ def record_steps_for(dt):
     assert abs(k-k_int) < 1e-6 * max(k, 1.0), f"dt={dt:.4e} does not evenly divide BASE_DT_INTERVAL"
     return k_int
 
+# %% Directories
+CONVERGENCE_DIR = os.path.dirname(os.path.abspath(__file__))
+OUTPUT_DIR      = os.path.join(CONVERGENCE_DIR, "output")
+GENERATED_DIR   = os.path.join(OUTPUT_DIR, "_generated")
+PULSE_CSV_NAME  = "inlet_pulse.csv"
+
+
+
+
+# %% Convergence refinement parameters
+SPATIAL_P_LIST   = [1, 2]
+SPATIAL_N_LIST = [8, 16, 32, 64, 128, 256, 512]
+SPATIAL_DT       = BASE_DT_INTERVAL / 384
+
+
+FIELD_CSV_COLUMNS = ["snapshot_index", "snapshot_time", "element_index",
+                     "vessel_id", "z", "area", "flow_rate"]
+
+
+
+
+def element_size(n_elements):
+    return LENGTH / n_elements
+
+def cfl_max_dt(h, p):
+    return h / ((2*p+1) * C0)
+
+def check_cfl(dt, h, p, label):
+    # dt margin
+    safe_dt = cfl_max_dt(h, p)
+    assert dt < safe_dt, f"{label}: dt: {dt:.4e} is bigger than cfl: {safe_dt:.4e}"
+    return dt / safe_dt
+
+
+# %% Single network ----------------------------------
 def build_network(n_elements, polynomial_order, pulse_csv_name):
      # A single vessel: prescribed flow-rate inlet, non-reflecting outlet
     return {
@@ -127,11 +140,14 @@ def build_network(n_elements, polynomial_order, pulse_csv_name):
         ],
     }
 
-
 def write_network_json(path, n_elements, polynomial_order, pulse_csv_name):
     os.makedirs(os.path.dirname(path), exist_ok=True)
     with open(path, "w") as f:
         json.dump(build_network(n_elements, polynomial_order, pulse_csv_name), f, indent=2)
+
+
+
+# %% Manifest
 
 def case_dir(study, case_name):
     d = os.path.join(OUTPUT_DIR, study, case_name)
