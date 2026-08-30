@@ -14,11 +14,30 @@ FRICTION_KR = 8.0 * math.pi * KINEMATIC_VISCOSITY
 
 C0 = math.sqrt(BETA * math.sqrt(A0) / (2.0 * RHO * A0))
 
+# sin^2 pulse
+
 PULSE_AMPLITUDE = 5.0
 PULSE_HALF_WIDTH = 4.0e-4
 PULSE_CENTER = 1.0e-3
 PULSE_WINDOW = 2.0 * PULSE_CENTER
 PULSE_CSV_DT = 2.0e-7
+
+def pulse_value(t):
+    if abs(t-PULSE_CENTER) > PULSE_HALF_WIDTH:
+        return 0.0
+    return PULSE_AMPLITUDE * math.sin( \
+        math.pi * (t - PULSE_CENTER + PULSE_HALF_WIDTH) / (2 * PULSE_HALF_WIDTH))**2
+
+# gaussian pulse
+PULSE_AMPLITUDE = 5.0
+PULSE_SIGMA     = 2.0e-4
+PULSE_CENTER    = 5.0 * PULSE_SIGMA
+PULSE_WINDOW    = 2.0 * PULSE_CENTER
+PULSE_CSV_DT    = 2.0e-7
+
+def pulse_value(t):
+    return PULSE_AMPLITUDE * math.exp(-0.5 * ((t - PULSE_CENTER) / PULSE_SIGMA) ** 2)
+
 
 TARGET_TIME = 3.0e-3
 NUM_SNAPSHOTS = 100
@@ -29,11 +48,14 @@ OUTPUT_DIR      = os.path.join(CONVERGENCE_DIR, "output")
 GENERATED_DIR   = os.path.join(OUTPUT_DIR, "_generated")
 PULSE_CSV_NAME  = "inlet_pulse.csv"
 
-def pulse_value(t):
-    if abs(t-PULSE_CENTER) > PULSE_HALF_WIDTH:
-        return 0.0
-    return PULSE_AMPLITUDE * math.sin( \
-        math.pi * (t - PULSE_CENTER + PULSE_HALF_WIDTH) / (2 * PULSE_HALF_WIDTH))**2
+SPATIAL_P_LIST   = [1, 2]
+SPATIAL_N_TESTED = [8, 16, 32, 64]
+SPATIAL_N_REF    = 128
+SPATIAL_DT       = BASE_DT_INTERVAL / 384
+
+FIELD_CSV_COLUMNS = ["snapshot_index", "snapshot_time", "element_index",
+                     "vessel_id", "z", "area", "flow_rate"]
+
 
 def write_pulse_csv(path):
     n = round(PULSE_WINDOW / PULSE_CSV_DT)
@@ -110,3 +132,16 @@ def write_network_json(path, n_elements, polynomial_order, pulse_csv_name):
     os.makedirs(os.path.dirname(path), exist_ok=True)
     with open(path, "w") as f:
         json.dump(build_network(n_elements, polynomial_order, pulse_csv_name), f, indent=2)
+
+def case_dir(study, case_name):
+    d = os.path.join(OUTPUT_DIR, study, case_name)
+    os.makedirs(d, exist_ok=True)
+    return d
+
+def write_manifest(path, **fields):
+    with open(path, "w") as f:
+        json.dump(fields, f, indent=2)
+
+def read_manifest(path):
+    with open(path, "r") as f:
+        return json.load(f)
