@@ -49,8 +49,8 @@ GENERATED_DIR   = os.path.join(OUTPUT_DIR, "_generated")
 PULSE_CSV_NAME  = "inlet_pulse.csv"
 
 SPATIAL_P_LIST   = [1, 2]
-SPATIAL_N_TESTED = [8, 16, 32, 64]
-SPATIAL_N_REF    = 128
+SPATIAL_N_LIST = [8, 16, 32, 64, 128, 256, 512]
+SPATIAL_N_REF    = 512
 SPATIAL_DT       = BASE_DT_INTERVAL / 384
 
 FIELD_CSV_COLUMNS = ["snapshot_index", "snapshot_time", "element_index",

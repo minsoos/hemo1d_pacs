@@ -17,3 +17,6 @@ out_*/
 .vscode
 __pycache__
 convergence/output/_generated
+convergence/output/spatial
+*.png
+*_test.py
