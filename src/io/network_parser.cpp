@@ -60,6 +60,7 @@ Vessel parseVessel(const json& j){
 
     if (j.contains("polynomial_order")){
         params.polynomialOrder = j.at("polynomial_order").get<unsigned>();
+        if (params.polynomialOrder < 1) throw std::invalid_argument("parseVessel: polynomial_order must be >= 1");
     }
     
     if (params.length <= 0.0)  throw std::invalid_argument("parseVessel: length must be positive");
