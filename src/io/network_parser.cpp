@@ -4,6 +4,7 @@
 #include <string>
 #include <nlohmann/json.hpp>
 #include <stdexcept>
+#include <set>
 
 namespace hemo1d{
 namespace{
@@ -14,8 +15,16 @@ VesselEnd parseVesselEnd(const std::string& s){
     if (s=="proximal") return VesselEnd::Proximal;
     if (s=="distal") return VesselEnd::Distal;
     throw std::runtime_error("Unknown Vessel type: \"" + s + "\" (expected \"proximal\" or \"distal\")");
-
 }
+
+void rejectUnknownKeys(const json& j, const std::set<std::string>& allowed, const char* context) {
+    for (const auto& item : j.items()) {
+        if (allowed.find(item.key()) == allowed.end()) {
+            throw std::invalid_argument(std::string(context) + ": unknown key '" + item.key() + "'");
+        }
+    }
+}
+
 
 BoundaryConditionType parseBcType(const std::string& s){
     if (s=="non_reflecting") return BoundaryConditionType::NonReflecting;
@@ -33,6 +42,11 @@ PrescribedQuantity parsePrescribedQuantity(const std::string& s){
 }
 
 Vessel parseVessel(const json& j){
+    const std::set<std::string> allowed_keys({"id", "name", "length", "A0", "beta", "alpha", 
+        "friction_kr", "n_elements", "polynomial_order"});
+    
+    rejectUnknownKeys(j, allowed_keys, "parseVessel");
+    
     const Id id = j.at("id").get<Id>();
     const std::string name = j.value("name", std::string());
 
@@ -46,8 +60,13 @@ Vessel parseVessel(const json& j){
 
     if (j.contains("polynomial_order")){
         params.polynomialOrder = j.at("polynomial_order").get<unsigned>();
+        if (params.polynomialOrder < 1) throw std::invalid_argument("parseVessel: polynomial_order must be >= 1");
     }
     
+    if (params.length <= 0.0)  throw std::invalid_argument("parseVessel: length must be positive");
+    if (params.A0 <= 0.0)      throw std::invalid_argument("parseVessel: A0 must be positive");
+    if (params.beta <= 0.0)    throw std::invalid_argument("parseVessel: beta must be positive");
+    if (params.nElements < 1)  throw std::invalid_argument("parseVessel: n_elements must be >= 1");
     return Vessel(id, name, params);
 }
 
@@ -55,6 +74,9 @@ std::optional<BoundaryConditionSpec> parseBoundaryCondition(const json& j,
         const std::filesystem::path& baseDir) {
             if (!j.contains("boundary_condition")) return std::nullopt;
             const json& bc = j.at("boundary_condition");
+            
+            const std::set<std::string> allowed_keys2 = {"type", "quantity", "csv_file"};
+            rejectUnknownKeys(bc, allowed_keys2, "parseBoundaryCondition");
 
             BoundaryConditionSpec spec;
             spec.type = parseBcType(bc.at("type").get<std::string>());
@@ -67,11 +89,16 @@ std::optional<BoundaryConditionSpec> parseBoundaryCondition(const json& j,
 }
 
 Node parseNode(const json& j, const std::filesystem::path& baseDir){
+    const std::set<std::string> allowed_keys1({"id", "name", "connections", "bifurcation_angles_rad", "boundary_condition"});
+    rejectUnknownKeys(j, allowed_keys1, "parseNode");
+
     const Id id = j.at("id").get<Id>();
     const std::string name = j.value("name", std::string());
 
     std::vector<VesselConnection> connections;
+    const std::set<std::string> allowed_keys2({"vessel", "end"});
     for (const json& c : j.at("connections")){
+        rejectUnknownKeys(c, allowed_keys2, "parseNode: connections");
         connections.push_back(
             VesselConnection{c.at("vessel").get<Id>(), parseVesselEnd(c.at("end").get<std::string>())}
         );
@@ -105,7 +132,8 @@ Network loadNetwork(const std::filesystem::path& jsonFile){
     }
 
     const std::filesystem::path baseDir = jsonFile.parent_path();
-
+    const std::set<std::string> allowed_keys({"_description", "fluid", "vessels", "nodes"});
+    rejectUnknownKeys(root, allowed_keys, "parseNetwork");
     // Get fluid properties
     FluidProperties fluid;
     if (root.contains("fluid")){
@@ -130,7 +158,8 @@ Network loadNetwork(const std::filesystem::path& jsonFile){
     // Parse Nodes
     std::vector<Node> nodes;
     const json& nodesJson = root.at("nodes");
-    vessels.reserve(nodesJson.size());
+    if (!nodesJson.is_array()) throw std::runtime_error("loadNetwork: 'nodes' must be an array");
+    nodes.reserve(nodesJson.size());
     for (Index i=0; i<nodesJson.size(); ++i){
         try{
             nodes.push_back(parseNode(nodesJson[i], baseDir));
