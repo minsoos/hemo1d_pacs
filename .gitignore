@@ -21,3 +21,6 @@ convergence/output/spatial
 *.png
 *_test.py
 convergence/output/bifurcation
+
+experiments/CoW/generated
+experiments/CoW/output
