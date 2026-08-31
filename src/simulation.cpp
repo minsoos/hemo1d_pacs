@@ -22,6 +22,7 @@ Simulation::Simulation(
     : network_(std::move(network)),
     mesh_(network_, dg::DgSettings{settings.defaultPolynomialOrder}),
     tubeLaw_(std::make_unique<physics::LinearElasticTubeLaw>()),
+    model_(*tubeLaw_, network_.fluid()),
     flux_(makeFlux(settings.flux)),
     limiter_(
         settings.useSlopeLimiter
@@ -35,7 +36,7 @@ Simulation::Simulation(
     ),
     solver_(
         std::make_unique<physics::Solver>(
-            mesh_, network_.fluid(), *tubeLaw_, *flux_,
+            mesh_, model_, *flux_,
             *boundarySolver_, limiter_.get()
         )
     ),

@@ -1,37 +1,36 @@
 #pragma once
 
-#include <utility>
-
-#include "hemo1d/core/types.hpp"
-#include "hemo1d/physics/tube_law.hpp"
-
+#include "hemo1d/core/vessel.hpp"
+#include "hemo1d/physics/section_state.hpp"
 namespace hemo1d::physics {
+
+class BloodFlowModel;
 
 class NumericalFlux {
 public:
     virtual ~NumericalFlux() = default;
 
-    virtual std::pair<Real, Real> compute(
-        Real AL, Real QL, Real AR, Real QR, 
-        Real A0, Real beta, Real alpha, Real rho, const TubeLaw& tubeLaw
+    virtual SectionState compute(
+        SectionState left, SectionState right, const VesselParameters& p,
+        const BloodFlowModel& model
     ) const = 0;
 };
 
 
 class LaxFriedrichsFlux : public NumericalFlux {
 public:
-    std::pair<Real, Real> compute(
-        Real AL, Real QL, Real AR, Real QR,
-        Real A0, Real beta, Real alpha, Real rho, const TubeLaw& tubeLaw
+    SectionState compute(
+        SectionState left, SectionState right, const VesselParameters& p,
+        const BloodFlowModel& model
     ) const override; 
 };
 
 
 class HllFlux : public NumericalFlux {
 public:
-    std::pair<Real, Real> compute(
-        Real AL, Real QL, Real AR, Real QR,
-        Real A0, Real beta, Real alpha, Real rho, const TubeLaw& tube
+    SectionState compute(
+        SectionState left, SectionState right, const VesselParameters& p,
+        const BloodFlowModel& model
     ) const override;
 };
 

@@ -8,6 +8,7 @@
 
 #include "hemo1d/dg/mesh.hpp"
 #include "hemo1d/io/network_parser.hpp"
+#include "hemo1d/physics/blood_flow_model.hpp"
 #include "hemo1d/physics/boundary_solver.hpp"
 #include "hemo1d/physics/solver.hpp"
 
@@ -74,8 +75,9 @@ TEST_CASE("BoundarySolver: Single vessel with a prescribed inlet and stays stabl
     LinearElasticTubeLaw law;
     LaxFriedrichsFlux flux;
     MinmodLimiter limiter;
+    const BloodFlowModel model(law, FluidProperties{});
     BoundarySolver bSolver(network, mesh, law, FluidProperties{});
-    Solver solver(mesh, FluidProperties{}, law, flux, bSolver, &limiter);
+    Solver solver(mesh, model, flux, bSolver, &limiter);
 
     Real time = 0.0;
     const Real dt = 1e-5;
@@ -110,8 +112,9 @@ TEST_CASE("BoundarySolver: Example implementtion",
     LinearElasticTubeLaw law;
     HllFlux flux;
     MinmodLimiter limiter;
+    const BloodFlowModel model(law, FluidProperties{});
     BoundarySolver bSolver(network, mesh, law, FluidProperties{});
-    Solver solver(mesh, FluidProperties{}, law, flux, bSolver, &limiter);
+    Solver solver(mesh, model, flux, bSolver, &limiter);
 
     Real time = 0.0;
     const Real dt = 5e-6;

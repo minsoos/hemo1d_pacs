@@ -15,6 +15,7 @@
 #include <vector>
  
 #include "hemo1d/dg/mesh.hpp"
+#include "hemo1d/physics/blood_flow_model.hpp"
 #include "hemo1d/physics/boundary_solver.hpp"
 #include "hemo1d/physics/flux.hpp"
 #include "hemo1d/physics/slope_limiter.hpp"
@@ -79,7 +80,8 @@ double benchmarkEvaluate(Index nElements, int repeats) {
     LinearElasticTubeLaw law;
     HllFlux flux;
     ConstantBoundaryStateProvider provider(0.126, 0.05);
-    SpatialOperator op(mesh, FluidProperties{}, law, flux, provider);
+    BloodFlowModel model(law, FluidProperties{});
+    SpatialOperator op(mesh, model, flux, provider);
  
     op.evaluate(u, 0.0, dudt); // warm-up (page faults, cache fill)
  
@@ -213,9 +215,10 @@ StepBreakdown benchmarkStep(Index elementsPerVessel, int repeats) {
     LinearElasticTubeLaw law;
     HllFlux flux;
     MinmodLimiter limiter;
+    BloodFlowModel model(law, network.fluid());
     BoundarySolver resolver(network, mesh, law, network.fluid());
     resolver.solve(u, 0.0, 1e-5);
-    Solver solver(mesh, network.fluid(), law, flux, resolver, &limiter);
+    Solver solver(mesh, model, flux, resolver, &limiter);
  
     const Real dt = 1e-5;
  
@@ -242,7 +245,7 @@ StepBreakdown benchmarkStep(Index elementsPerVessel, int repeats) {
     // Component breakdown, replicating what Solver::step() does internally.
     {
         State k1(mesh.totalDofs()), k2(mesh.totalDofs()), stage(mesh.totalDofs());
-        SpatialOperator op(mesh, network.fluid(), law, flux, resolver);
+        SpatialOperator op(mesh, model, flux, resolver);
  
         double spatialMs = 0.0, limiterMsAcc = 0.0, combineMsAcc = 0.0, resolveMs = 0.0;
         for (int i = 0; i < repeats; ++i) {

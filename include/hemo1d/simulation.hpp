@@ -7,6 +7,7 @@
 #include "hemo1d/core/network.hpp"
 #include "hemo1d/dg/mesh.hpp"
 #include "hemo1d/output/probe.hpp"
+#include "hemo1d/physics/blood_flow_model.hpp"
 #include "hemo1d/physics/boundary_solver.hpp"
 #include "hemo1d/physics/flux.hpp"
 #include "hemo1d/physics/slope_limiter.hpp"
@@ -71,6 +72,7 @@ private:
     Network network_;
     dg::Mesh mesh_;
     std::unique_ptr<physics::TubeLaw> tubeLaw_;
+    physics::BloodFlowModel model_;
     std::unique_ptr<physics::NumericalFlux> flux_;
     std::unique_ptr<physics::MinmodLimiter> limiter_;
     std::unique_ptr<physics::BoundarySolver> boundarySolver_;

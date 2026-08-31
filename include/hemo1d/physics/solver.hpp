@@ -5,16 +5,16 @@
 #include "hemo1d/physics/slope_limiter.hpp"
 #include "hemo1d/physics/spatial_operator.hpp"
 #include "hemo1d/physics/state.hpp"
-#include "hemo1d/physics/tube_law.hpp"
 
 namespace hemo1d::physics {
+
+class BloodFlowModel;
 
 class Solver {
 public:
     Solver(
-        const dg::Mesh& mesh, FluidProperties fluid, const TubeLaw& tubeLaw,
-        const NumericalFlux& flux, const BoundaryStateProvider& boundaryProvider,
-        const SlopeLimiter* limiter = nullptr
+        const dg::Mesh& mesh, const BloodFlowModel& model, const NumericalFlux& flux,
+        const BoundaryStateProvider& boundaryProvider, const SlopeLimiter* limiter = nullptr
     );
 
     void step(State& u, Real time, Real dt) const;
