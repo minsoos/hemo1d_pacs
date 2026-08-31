@@ -1,187 +1,128 @@
 #include "hemo1d/physics/junction_solver.hpp"
-#include "hemo1d/core/types.hpp"
 
 #include <algorithm>
 #include <cmath>
 #include <stdexcept>
 
 #include "hemo1d/core/linear_algebra.hpp"
-#include "hemo1d/physics/compatibility.hpp"
+#include "hemo1d/physics/blood_flow_model.hpp"
 
 namespace hemo1d::physics {
 
-namespace{
+namespace {
 
-// Total pressure formula
-Real totalPressure(Real A, Real Q, Real A0, Real beta, Real rho, const TubeLaw& tubeLaw){
-    const Real u = Q / A;
-    return tubeLaw.pressure(A, A0, beta) + 0.5 * rho * u * u;
+// Derivatives of BloodFlowModel::totalPressure w.r.t. the branch state,
+// needed for the Newton Jacobian of the pressure-continuity rows.
+Real totalPressureDA(SectionState u, const VesselParameters& p, const BloodFlowModel& model) {
+    return model.tubeLaw().pressureDerivative(u.A, p) -
+           model.density() * u.Q * u.Q / (u.A * u.A * u.A);
 }
 
-// Total pressure derivative respect to A
-Real totalPressureDA(Real A, Real Q, Real A0, Real beta, Real rho, const TubeLaw& tubeLaw){
-    return tubeLaw.pressureDerivative(A, A0, beta) - rho * Q * Q / (A * A * A);
-}
-
-// Total pressure derivative respect to Q
-Real totalPressureDQ(Real A, Real Q, Real rho) {
-    return rho * Q / (A * A);
-}
-
-void MassConservationUpdate(const std::vector<Real>& x, const std::vector<Real>& sigma, 
-            std::vector<Real>& F, DenseMatrix& J, Index N){
-    for (std::size_t i = 0; i < N; ++i) {
-        F[0] += sigma[i] * x[2 * i + 1];
-        J(0, 2 * i + 1) = sigma[i];
-    }
-}
-
-void TotalPressureUpdate(const std::vector<Real>& x, const std::vector<Real>& sigma, Real rho, const TubeLaw& tubeLaw,
-            std::vector<Real>& F, DenseMatrix& J, const std::vector<JunctionBranch>& branches, Index N){
-    
-    const Real A0v = x[0];
-    const Real Q0v = x[1];
-    const Real Ptot0 = totalPressure(A0v, Q0v, branches[0].A0, branches[0].beta, rho, tubeLaw);
-    const Real dPtot0dA = totalPressureDA(A0v, Q0v, branches[0].A0, branches[0].beta, rho, tubeLaw);
-    const Real dPtot0dQ = totalPressureDQ(A0v, Q0v, rho);
-    
-    for (std::size_t k=0; k+1<N; ++k){
-        const std::size_t i=k+1;
-        const Real Ai = x[2*i];
-        const Real Qi = x[2*i+1];
-        J(i, 0) = dPtot0dA;
-        J(i, 1) = dPtot0dQ;
-
-        F[i] = Ptot0 - totalPressure(Ai, Qi, branches[i].A0, branches[i].beta, rho, tubeLaw);
-        J(i, 2*i) = -totalPressureDA(Ai, Qi, branches[i].A0, branches[i].beta, rho, tubeLaw);
-        J(i, 2*i+1) = -totalPressureDQ(Ai, Qi, rho);
-    }
-}
-
-void compatibilityUpdate(const std::vector<Real>& x, std::vector<Real>& F, const std::vector<Real>& compatRhs,
-        DenseMatrix& J, const std::vector<std::pair<Real, Real>>& lOut, Index N){
-        for (std::size_t i=0; i<N; ++i){
-            const std::size_t row = N+i;
-            F[row] = lOut[i].first * x[2*i] + lOut[i].second * x[2*i+1] - compatRhs[i];
-            J(row, 2*i) = lOut[i].first;
-            J(row, 2*i+1) = lOut[i].second;
-        }
-}
-
-Real l2Norm(const std::vector<Real>& v){
-        Real sq = 0.0;
-        for (Real e : v) sq += e * e;
-        return std::sqrt(sq);
-}
+Real totalPressureDQ(SectionState u, Real rho) { return rho * u.Q / (u.A * u.A); }
 
 } // namespace
 
-
-
-JunctionSolution solveJunction(const std::vector<JunctionBranch>& branches, Real rho,
-                    const TubeLaw& tubeLaw, Real dt, Real residualTol, Real incrementTol, int maxIterations){
-    
+JunctionSolution solveJunction(const std::vector<JunctionBranch>& branches,
+                                const BloodFlowModel& model, Real dt, Real tolerance,
+                                int maxIterations) {
     const std::size_t N = branches.size();
-    if (N<2){
+    if (N < 2) {
         throw std::invalid_argument("solveJunction: at least 2 branches are required");
     }
+    const Real rho = model.density();
 
+    // Frozen (explicit, evaluated at the given branch data) quantities: the
+    // sign convention for mass conservation, the outgoing left eigenvector,
+    // and the compatibility condition's right-hand side.
     std::vector<Real> sigma(N);
     std::vector<std::pair<Real, Real>> lOut(N);
     std::vector<Real> compatRhs(N);
 
-    for (std::size_t i=0; i<N; ++i){
+    for (std::size_t i = 0; i < N; ++i) {
         const JunctionBranch& b = branches[i];
-        sigma[i] = (b.end==VesselEnd::Distal) ? 1.0 : -1.0;
+        sigma[i] = (b.end == VesselEnd::Distal) ? 1.0 : -1.0;
 
+        const LeftEigenvectors eig = model.leftEigenvectors(b.trace, b.params);
+        lOut[i] = (b.end == VesselEnd::Proximal) ? eig.lMinus : eig.lPlus;
 
-        const LeftEigenvectors eig = computeLeftEigenvectors(b.A, b.Q, b.A0, 
-            b.beta, b.alpha, rho, tubeLaw);
-        
-        lOut[i] = (b.end == VesselEnd::Distal) ? eig.lPlus : eig.lMinus;
-
-        const auto [compatA, compatQ] = compatibilityPrediction(b.A, b.Q, b.dAdz, b.dQdz, b.A0,
-            b.beta, b.alpha, rho, b.frictionKr, tubeLaw, dt);
-        
-        compatRhs[i] = lOut[i].first * compatA + lOut[i].second * compatQ;
-
+        const SectionState cc = model.compatibilityPrediction(b.trace, b.grad, b.params, dt);
+        compatRhs[i] = lOut[i].first * cc.A + lOut[i].second * cc.Q;
     }
 
-    const Index n= 2*N;
+    const Index n = 2 * N;
     std::vector<Real> x(n);
-    for (std::size_t i=0; i<N; ++i){
-        x[2*i] = branches[i].A;
-        x[2*i+1] = branches[i].Q;
+    for (std::size_t i = 0; i < N; ++i) {
+        x[2 * i] = branches[i].trace.A;
+        x[2 * i + 1] = branches[i].trace.Q;
     }
 
-    // Helper lambda functions
-    auto update = [&](const std::vector<Real>& xx, std::vector<Real>& Fout, DenseMatrix& Jout){
-        Fout.assign(n, 0.0);
-        Jout = DenseMatrix(n,n,0.0);
-        MassConservationUpdate(xx, sigma, Fout, Jout, N);
-        TotalPressureUpdate(xx, sigma, rho, tubeLaw, Fout, Jout, branches, N);
-        compatibilityUpdate(xx, Fout, compatRhs, Jout, lOut, N);
-    };
-   
-
-    // Newton raphson method
     int iter = 0;
-    bool converged = false, stalled = false;
     Real residualNorm = 0.0;
-    std::vector<Real> F(n, 0.0);
-    DenseMatrix J(n, n, 0.0);
-    for (; iter<maxIterations; ++iter){
-        update(x, F, J);
-        residualNorm = l2Norm(F);
-        if (residualNorm < residualTol){
-            converged = true;
-            break;
+    for (; iter < maxIterations; ++iter) {
+        std::vector<Real> F(n, 0.0);
+        DenseMatrix J(n, n, 0.0);
+
+        // Conservation of mass (row 0), linear.
+        for (std::size_t i = 0; i < N; ++i) {
+            F[0] += sigma[i] * x[2 * i + 1];
+            J(0, 2 * i + 1) = sigma[i];
         }
-        // -1 * F
+
+        // Continuity of total pressure, branch 0 vs every other branch
+        // (rows 1..N-1), the only nonlinear equations.
+        const SectionState u0{x[0], x[1]};
+        const Real Ptot0 = model.totalPressure(u0, branches[0].params);
+        const Real dPtot0dA = totalPressureDA(u0, branches[0].params, model);
+        const Real dPtot0dQ = totalPressureDQ(u0, rho);
+        for (std::size_t k = 0; k + 1 < N; ++k) {
+            const std::size_t i = k + 1;
+            const SectionState ui{x[2 * i], x[2 * i + 1]};
+            const Real row = 1 + k;
+            F[row] = Ptot0 - model.totalPressure(ui, branches[i].params);
+            J(row, 0) = dPtot0dA;
+            J(row, 1) = dPtot0dQ;
+            J(row, 2 * i) = -totalPressureDA(ui, branches[i].params, model);
+            J(row, 2 * i + 1) = -totalPressureDQ(ui, rho);
+        }
+
+        // Compatibility conditions (rows N..2N-1), linear.
+        for (std::size_t i = 0; i < N; ++i) {
+            const std::size_t row = N + i;
+            F[row] = lOut[i].first * x[2 * i] + lOut[i].second * x[2 * i + 1] - compatRhs[i];
+            J(row, 2 * i) = lOut[i].first;
+            J(row, 2 * i + 1) = lOut[i].second;
+        }
+
+        Real fNormSq = 0.0;
+        for (Real f : F) fNormSq += f * f;
+        residualNorm = std::sqrt(fNormSq);
+
         std::vector<Real> negF(n);
         for (Index k = 0; k < n; ++k) negF[k] = -F[k];
-
-        // Solve linear system
         const std::vector<Real> delta = solveLinearSystem(J, negF);
 
-        // Relative change respect to x
         Real maxRelChange = 0.0;
-        for (Index k=0; k<n; ++k){
+        for (Index k = 0; k < n; ++k) {
             x[k] += delta[k];
-
-            maxRelChange = std::max(maxRelChange, std::abs(delta[k]) / 
-                                                    (1.0 + std::abs(x[k])));
+            maxRelChange = std::max(maxRelChange, std::abs(delta[k]) / (1.0 + std::abs(x[k])));
         }
 
-        // Newton convergence break
-        if (maxRelChange < incrementTol){
-            stalled = true;
+        if (maxRelChange < tolerance) {
             ++iter;
             break;
         }
-
     }
-
-    if (!converged){
-        update(x, F, J);
-        residualNorm = l2Norm(F);
-        if (residualNorm < residualTol) converged = true;
-    }
-    stalled = stalled && !converged;
 
     JunctionSolution solution;
     solution.A.resize(N);
     solution.Q.resize(N);
-    for (std::size_t i=0; i<N; ++i){
-        solution.A[i] = x[2*i];
-        solution.Q[i] = x[2*i+1];
+    for (std::size_t i = 0; i < N; ++i) {
+        solution.A[i] = x[2 * i];
+        solution.Q[i] = x[2 * i + 1];
     }
     solution.iterations = iter;
-    solution.converged = converged;
-    solution.stalled = stalled;
     solution.residualNorm = residualNorm;
     return solution;
 }
-
 
 } // namespace hemo1d::physics

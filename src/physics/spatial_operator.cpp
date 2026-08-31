@@ -5,18 +5,16 @@
 #include <vector>
 
 #include "hemo1d/core/parallel.hpp"
-#include "hemo1d/physics/conservation_law.hpp"
+#include "hemo1d/physics/blood_flow_model.hpp"
 
 namespace hemo1d::physics {
 
 SpatialOperator::SpatialOperator(
-    const dg::Mesh& mesh, FluidProperties fluid,
-    const TubeLaw& tubeLaw, const NumericalFlux& flux,
-    const BoundaryStateProvider& boundaryProvider
+    const dg::Mesh& mesh, const BloodFlowModel& model, 
+    const NumericalFlux& flux, const BoundaryStateProvider& boundaryProvider
 )
     : mesh_(mesh),
-    fluid_(fluid),
-    tubeLaw_(tubeLaw),
+    model_(model),
     flux_(flux),
     boundaryProvider_(boundaryProvider) 
 {
@@ -41,33 +39,31 @@ void SpatialOperator::evaluate(const State& u, Real time, State& dudt) const {
         const Index offset = el.dofOffset();
         const Real J = el.jacobian();
 
-        const Real Al = u.A[offset];
-        const Real Ql = u.Q[offset];
-        const Real Ar = u.A[offset + n - 1];
-        const Real Qr = u.Q[offset + n - 1];
+        const SectionState uLeft{u.A[offset], u.Q[offset]};
+        const SectionState uRight{u.A[offset + n - 1], u.Q[offset + n - 1]};
 
-        std::pair<Real, Real> outsideLeft;
+        SectionState outsideLeft;
         if (el.leftNeighbor().has_value()) {
             const dg::Element& neighbor = elements[*el.leftNeighbor()];
             const Index nOff = neighbor.dofOffset() + neighbor.numDofs() - 1;
             outsideLeft = {u.A[nOff], u.Q[nOff]};
         } else {
-            outsideLeft = boundaryProvider_.exteriorState(el.vesselId(), VesselEnd::Proximal, time);
+            const auto ext = boundaryProvider_.exteriorState(el.vesselId(), VesselEnd::Proximal, time);
+            outsideLeft = {ext.first, ext.second};
         }
 
-        std::pair<Real, Real> outsideRight;
+        SectionState outsideRight;
         if (el.rightNeighbor().has_value()) {
             const dg::Element& neighbor = elements[*el.rightNeighbor()];
             const Index nOff = neighbor.dofOffset();
             outsideRight = { u.A[nOff], u.Q[nOff] };
         } else {
-            outsideRight = boundaryProvider_.exteriorState(el.vesselId(), VesselEnd::Distal, time);
+            const auto ext = boundaryProvider_.exteriorState(el.vesselId(), VesselEnd::Distal, time);
+            outsideRight = {ext.first, ext.second};
         }
 
-        const auto [leftFluxA, leftFluxQ] = flux_.compute(
-            outsideLeft.first, outsideLeft.second, Al, Ql, p.A0, p.beta, p.alpha, fluid_.density, tubeLaw_);
-        const auto [rightFluxA, rightFluxQ] = flux_.compute(
-            Ar, Qr, outsideRight.first, outsideRight.second, p.A0, p.beta, p.alpha, fluid_.density, tubeLaw_);
+        const SectionState leftFlux = flux_.compute(outsideLeft, uLeft, p, model_);
+        const SectionState rightFlux = flux_.compute(uRight, outsideRight, p, model_);
 
         const dg::ReferenceElement& ref = el.referenceElement();
         const dg::QuadratureRule& quad = ref.quadrature();
@@ -85,19 +81,19 @@ void SpatialOperator::evaluate(const State& u, Real time, State& dudt) const {
                 Aq += L(q, i) * u.A[offset + i];
                 Qq += L(q, i) * u.Q[offset + i];
             }
-            const auto [fA, fQ] = physicalFlux(Aq, Qq, p.A0, p.beta, p.alpha, fluid_.density, tubeLaw_);
+            const SectionState f = model_.physicalFlux({Aq, Qq}, p);
             const Real sourceQ = -p.frictionKr * Qq / Aq;
             const Real w = quad.weights[q];
             for (Index i = 0; i < n; ++i) {
-                rhsA[i] += w * fA * dL(q, i);
-                rhsQ[i] += w * fQ * dL(q, i) + J * w * sourceQ * L(q, i);
+                rhsA[i] += w * f.A * dL(q, i);
+                rhsQ[i] += w * f.Q * dL(q, i) + J * w * sourceQ * L(q, i);
             }
         }
 
-        rhsA[0] += leftFluxA;
-        rhsA[n - 1] -= rightFluxA;
-        rhsQ[0] += leftFluxQ;
-        rhsQ[n - 1] -= rightFluxQ;
+        rhsA[0] += leftFlux.A;
+        rhsA[n - 1] -= rightFlux.A;
+        rhsQ[0] += leftFlux.Q;
+        rhsQ[n - 1] -= rightFlux.Q;
 
         const DenseMatrix& Minv = ref.massMatrixInverse();
         for (Index i = 0; i < n; ++i) {

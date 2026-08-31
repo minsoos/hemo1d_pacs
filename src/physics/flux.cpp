@@ -3,53 +3,54 @@
 #include <algorithm>
 #include <cmath>
 
-#include "hemo1d/physics/conservation_law.hpp"
-#include "hemo1d/physics/characteristics.hpp"
+#include "hemo1d/physics/blood_flow_model.hpp"
 
 namespace hemo1d::physics {
 
-std::pair<Real, Real> LaxFriedrichsFlux::compute(
-    Real AL, Real QL, Real AR, Real QR,
-    Real A0, Real beta, Real alpha, Real rho, const TubeLaw& tubeLaw
+SectionState LaxFriedrichsFlux::compute(
+    SectionState left, SectionState right, const VesselParameters& p,
+    const BloodFlowModel& model
 ) const {
 
-    const auto [FAL, FQL] = physicalFlux(AL, QL, A0, beta, alpha, rho, tubeLaw);
-    const auto [FAR, FQR] = physicalFlux(AR, QR, A0, beta, alpha, rho, tubeLaw);
+    const SectionState Fl = model.physicalFlux(left, p);
+    const SectionState Fr = model.physicalFlux(right, p);
 
-    const Characteristics leftChar = computeCharacteristics(AL, QL, A0, beta, alpha, rho, tubeLaw);
-    const Characteristics rightChar = computeCharacteristics(AR, QR, A0, beta, alpha, rho, tubeLaw);
-    const Real lambdaMax = std::max({std::abs(leftChar.lambdaMinus), std::abs(leftChar.lambdaPlus),
-                                    std::abs(rightChar.lambdaMinus), std::abs(rightChar.lambdaPlus)});
+    const Characteristics cl = model.characteristics(left, p);
+    const Characteristics cr = model.characteristics(right, p);
+    const Real lambdaMax = std::max({
+        std::abs(cl.lambdaMinus), std::abs(cl.lambdaPlus),
+        std::abs(cr.lambdaMinus), std::abs(cr.lambdaPlus)
+    });
 
     return {
-        0.5 * (FAL + FAR) - 0.5 * lambdaMax * (AR - AL),
-        0.5 * (FQL + FQR) - 0.5 * lambdaMax * (QR - QL)
+        0.5 * (Fl.A + Fr.A) - 0.5 * lambdaMax * (right.A - left.A),
+        0.5 * (Fl.Q + Fr.Q) - 0.5 * lambdaMax * (right.Q - left.Q)
     };
 }
 
 
-std::pair<Real, Real> HllFlux::compute(
-    Real AL, Real QL, Real AR, Real QR,
-    Real A0, Real beta, Real alpha, Real rho, const TubeLaw& tube
+SectionState HllFlux::compute(
+    SectionState left, SectionState right, const VesselParameters& p,
+    const BloodFlowModel& model
 ) const {
 
-    const Characteristics leftChar = computeCharacteristics(AL, QL, A0, beta, alpha, rho, tube);
-    const Characteristics rightChar = computeCharacteristics(AR, QR, A0, beta, alpha, rho, tube);
+    const Characteristics cl = model.characteristics(left, p);
+    const Characteristics cr = model.characteristics(right, p);
 
-    const Real sL = std::min(leftChar.lambdaMinus, rightChar.lambdaMinus);
-    const Real sR = std::max(leftChar.lambdaPlus, rightChar.lambdaPlus);
+    const Real sL = std::min(cl.lambdaMinus, cr.lambdaMinus);
+    const Real sR = std::max(cl.lambdaPlus, cr.lambdaPlus);
 
-    const auto [FAL, FQL] = physicalFlux(AL, QL, A0, beta, alpha, rho, tube);
-    if (sL >= 0.0) return {FAL, FQL};
+    const SectionState Fl = model.physicalFlux(left, p);
+    if (sL >= 0.0) return Fl;
 
-    const auto [FAR, FQR] = physicalFlux(AR, QR, A0, beta, alpha, rho, tube);
-    if (sR <= 0.0) return {FAR, FQR};
+    const SectionState Fr = model.physicalFlux(right, p);
+    if (sR <= 0.0) return Fr;
 
     const Real denom = sR - sL;
 
     return {
-        (sR * FAL - sL * FAR + sR * sL * (AR - AL)) / denom,
-        (sR * FQL - sL * FQR + sR * sL * (QR - QL)) / denom
+        (sR * Fl.A - sL * Fr.A + sR * sL * (right.A - left.A)) / denom,
+        (sR * Fl.Q - sL * Fr.Q + sR * sL * (right.Q - left.Q)) / denom
     };
 
 }

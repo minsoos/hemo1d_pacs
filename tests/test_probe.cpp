@@ -6,6 +6,7 @@
 
 #include "hemo1d/dg/mesh.hpp"
 #include "hemo1d/output/probe.hpp"
+#include "hemo1d/physics/blood_flow_model.hpp"
 
 using namespace hemo1d;
 using namespace hemo1d::dg;
@@ -46,9 +47,10 @@ TEST_CASE("Probe: Single vessel with a prescribed inlet and stays stable",
     }
  
     LinearElasticTubeLaw law;
+    const BloodFlowModel model(law, FluidProperties{});
     for (Real z : {0.0, 0.37, 1.0, 2.5, 3.9999, 4.0}) {
         Probe probe("p", 1, z, mesh);
-        const ProbeSample s = probe.sample(state, 1.23, law);
+        const ProbeSample s = probe.sample(state, 1.23, model);
         CHECK(s.time == Approx(1.23));
         CHECK(s.A == Approx(0.126).margin(1e-10));
         CHECK(s.Q == Approx(0.05).margin(1e-10));
@@ -71,7 +73,8 @@ TEST_CASE("ProbeRecorder: writeCsv: writes one file per probe with a header", "[
     ProbeRecorder recorder;
     recorder.addProbe("outlet", 1, 4.0, mesh);
     LinearElasticTubeLaw law;
-    recorder.record(state, 0.0, law);
+    const BloodFlowModel model(law, FluidProperties{});
+    recorder.record(state, 0.0, model);
 
     const std::filesystem::path dir =
         std::filesystem::temp_directory_path() / "hemo1d_test_probe_csv";

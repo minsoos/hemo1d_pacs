@@ -9,15 +9,16 @@
 #include "hemo1d/io/time_series.hpp"
 #include "hemo1d/physics/boundary_state_provider.hpp"
 #include "hemo1d/physics/state.hpp"
-#include "hemo1d/physics/tube_law.hpp"
 
 namespace hemo1d::physics {
+
+class BloodFlowModel;
+
 class BoundarySolver : public BoundaryStateProvider {
 private:
     const Network& network_;
     const dg::Mesh& mesh_;
-    const TubeLaw& tubeLaw_;
-    FluidProperties fluid_;
+    const BloodFlowModel& model_;
 
     std::unordered_map<Id, io::TimeSeries> prescribedSeries_; // keyed by node id
 
@@ -25,8 +26,7 @@ private:
 
 
 public:
-    BoundarySolver(const Network& network, const dg::Mesh& mesh, const TubeLaw& tubeLaw,
-                      FluidProperties fluid);
+    BoundarySolver(const Network& network, const dg::Mesh& mesh, const BloodFlowModel& model);
 
     void solve(const State& state, Real time, Real dt);
 

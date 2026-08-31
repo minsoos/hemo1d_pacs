@@ -5,11 +5,10 @@
 namespace hemo1d::physics {
 
 Solver::Solver(
-    const dg::Mesh& mesh, FluidProperties fluid, const TubeLaw& tubeLaw,
-    const NumericalFlux& flux, const BoundaryStateProvider& boundaryProvider,
-    const SlopeLimiter* limiter
+    const dg::Mesh& mesh, const BloodFlowModel& model, const NumericalFlux& flux,
+    const BoundaryStateProvider& boundaryProvider, const SlopeLimiter* limiter
 ) 
-    : operatorL_(mesh, fluid, tubeLaw, flux, boundaryProvider),
+    : operatorL_(mesh, model, flux, boundaryProvider),
     limiter_(limiter),
     stage_(mesh.totalDofs()),
     k1_(mesh.totalDofs()),

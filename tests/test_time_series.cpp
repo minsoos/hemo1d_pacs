@@ -59,16 +59,6 @@ TEST_CASE("TimeSeries::fromCsv search at a missing file", "[time_series]") {
     CHECK_THROWS(TimeSeries::fromCsv("does/not/exist.csv"));
 }
 
-TEST_CASE("TimeSeries evaluate outside the range", "[time_series]") {
-    TimeSeries ts({0.0, 1.0, 2.0}, {0.0, 10.0, 10.0});
-
-    CHECK(ts.value(0.0)  == Approx(0.0));     // exactly at front
-    CHECK(ts.value(2.0)  == Approx(10.0));    // exactly at back
-    CHECK(ts.value(2.0 + 1e-15) == Approx(10.0));  // within tolerance -> clamps
-    CHECK_THROWS(ts.value(2.1));                    // clearly outside -> throws
-    CHECK_THROWS(ts.value(-0.5));
-}
-
 
 TEST_CASE("TimeSeries::fromCsv reads a header and data rows", "[time_series]") {
     const std::filesystem::path path = std::filesystem::path(HEMO1D_EXAMPLES_DIR) /

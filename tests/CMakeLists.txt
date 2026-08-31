@@ -20,6 +20,8 @@ set(HEMO1D_TEST_SOURCES
     test_probe.cpp
     test_vtk_writer.cpp
     test_simulation.cpp
+    test_blood_flow_model.cpp
+    test_compatibility.cpp
 )
 
 if(NOT HEMO1D_TEST_SOURCES)

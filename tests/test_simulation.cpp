@@ -100,8 +100,8 @@ TEST_CASE("Simulation::cflTimeStep matches physics::cflTimeStep on the live stat
     sim.setUniformInitialCondition(0.03, 0.15);
  
     const physics::LinearElasticTubeLaw law;
-    const Real expected =
-        physics::cflTimeStep(sim.state(), sim.mesh(), sim.network().fluid(), law, 0.8);
+    const physics::BloodFlowModel model(law, sim.network().fluid());
+    const Real expected = physics::cflTimeStep(sim.state(), sim.mesh(), model, 0.8);
     CHECK(sim.cflTimeStep(0.8) == Approx(expected));
  
     // dt shrinks as the safety factor shrinks, and the helper reacts to

@@ -22,6 +22,7 @@ Simulation::Simulation(
     : network_(std::move(network)),
     mesh_(network_, dg::DgSettings{settings.defaultPolynomialOrder}),
     tubeLaw_(std::make_unique<physics::LinearElasticTubeLaw>()),
+    model_(*tubeLaw_, network_.fluid()),
     flux_(makeFlux(settings.flux)),
     limiter_(
         settings.useSlopeLimiter
@@ -30,12 +31,12 @@ Simulation::Simulation(
     ),
     boundarySolver_(
         std::make_unique<physics::BoundarySolver>(
-            network_, mesh_, *tubeLaw_, network_.fluid()
+            network_, mesh_, model_
         )
     ),
     solver_(
         std::make_unique<physics::Solver>(
-            mesh_, network_.fluid(), *tubeLaw_, *flux_,
+            mesh_, model_, *flux_,
             *boundarySolver_, limiter_.get()
         )
     ),
@@ -97,7 +98,7 @@ void Simulation::step(Real dt) {
 }
 
 Real Simulation::cflTimeStep(Real cflNumber) const {
-    return physics::cflTimeStep(state_, mesh_, network_.fluid(), *tubeLaw_, cflNumber);
+    return physics::cflTimeStep(state_, mesh_, model_, cflNumber);
 }
 
 void Simulation::run(
@@ -120,11 +121,11 @@ void Simulation::run(
         ++stepIndex;
 
         if (recordEvery > 0 && stepIndex % recordEvery == 0) {
-            probeRecorder_.record(state_, time_, *tubeLaw_);
+            probeRecorder_.record(state_, time_, model_);
         }
 
         if (vtkWriter && vtkEvery > 0 && stepIndex % vtkEvery == 0) {
-            vtkWriter->write(mesh_, state_, *tubeLaw_, network_.fluid().density, time_);
+            vtkWriter->write(mesh_, state_, model_, time_);
         }
     }
 }
