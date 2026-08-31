@@ -6,13 +6,12 @@
 #include <vector>
 
 #include "hemo1d/core/parallel.hpp"
-#include "hemo1d/physics/characteristics.hpp"
+#include "hemo1d/physics/blood_flow_model.hpp"
 
 namespace hemo1d::physics {
 
 Real maxWaveSpeed(
-    const State& u, const dg::Mesh& mesh, const FluidProperties& fluid,
-    const TubeLaw& tubeLaw
+    const State& u, const dg::Mesh& mesh, const BloodFlowModel& model
 ) {
     const std::vector<dg::Element>& elements = mesh.elements();
     const Index numElements = elements.size();
@@ -25,10 +24,7 @@ Real maxWaveSpeed(
 
         for (Index i = 0; i < el.numDofs(); ++i) {
             const Index idx = el.dofOffset() + i;
-            const Characteristics c = computeCharacteristics(
-                u.A[idx], u.Q[idx], p.A0, p.beta, p.alpha, fluid.density, tubeLaw
-            );
-
+            const Characteristics c = model.characteristics({u.A[idx], u.Q[idx]}, p);
             result = std::max({result, std::abs(c.lambdaMinus), std::abs(c.lambdaPlus)});
         }
     }
@@ -37,8 +33,8 @@ Real maxWaveSpeed(
 
 
 Real cflTimeStep(
-    const State& u, const dg::Mesh& mesh, const FluidProperties& fluid,
-    const TubeLaw& tubeLaw, Real cflNumber
+    const State& u, const dg::Mesh& mesh, const BloodFlowModel& model, 
+    Real cflNumber
 ) {
     const std::vector<dg::Element>& elements = mesh.elements();
     const Index numElements = elements.size();
@@ -52,9 +48,7 @@ Real cflTimeStep(
 
         for (Index i = 0; i < el.numDofs(); ++i) {
             const Index idx = el.dofOffset() + i;
-            const Characteristics c = computeCharacteristics(
-                u.A[idx], u.Q[idx], p.A0, p.beta, p.alpha, fluid.density, tubeLaw
-            );
+            const Characteristics c = model.characteristics({u.A[idx], u.Q[idx]}, p);
             localMaxSpeed = std::max({localMaxSpeed, std::abs(c.lambdaMinus), std::abs(c.lambdaPlus)});
         }
         if (localMaxSpeed > 0.0) {

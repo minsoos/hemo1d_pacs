@@ -98,7 +98,7 @@ void Simulation::step(Real dt) {
 }
 
 Real Simulation::cflTimeStep(Real cflNumber) const {
-    return physics::cflTimeStep(state_, mesh_, network_.fluid(), *tubeLaw_, cflNumber);
+    return physics::cflTimeStep(state_, mesh_, model_, cflNumber);
 }
 
 void Simulation::run(

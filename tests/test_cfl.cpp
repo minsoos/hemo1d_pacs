@@ -2,6 +2,7 @@
 #include <catch2/catch_test_macros.hpp>
  
 #include "hemo1d/dg/mesh.hpp"
+#include "hemo1d/physics/blood_flow_model.hpp"
 #include "hemo1d/physics/cfl.hpp"
  
 using namespace hemo1d;
@@ -54,18 +55,20 @@ TEST_CASE("cflTimeStep matches h/((2p+1)*c) for a uniform, at-rest state", "[cfl
  
     LinearElasticTubeLaw law;
     const FluidProperties fluid{};
+    const BloodFlowModel model(law, fluid);
     const Real c = law.waveSpeed(kA0, kA0, kBeta, fluid.density);
     const Real h = 2.0 / static_cast<Real>(nElements); // vessel length 2.0, uniform mesh
     const Real cflNumber = 0.7;
     const Real expected = cflNumber * h / ((2.0 * order + 1.0) * c);
  
-    CHECK(cflTimeStep(u, mesh, fluid, law, cflNumber) == Approx(expected).epsilon(1e-9));
+    CHECK(cflTimeStep(u, mesh, model, cflNumber) == Approx(expected).epsilon(1e-9));
 }
  
 TEST_CASE("cflTimeStep scales inversely with cflNumber and is smaller for higher order", "[cfl]") {
     const Network network = makeSingleVesselNetwork(6);
     LinearElasticTubeLaw law;
     const FluidProperties fluid{};
+    const BloodFlowModel model(law, fluid);
  
     DgSettings orderOneSettings;
     orderOneSettings.defaultPolynomialOrder = 1;
@@ -85,10 +88,10 @@ TEST_CASE("cflTimeStep scales inversely with cflNumber and is smaller for higher
         u3.Q[i] = 0.02;
     }
  
-    const Real dtOrderOne = cflTimeStep(u1, meshOrderOne, fluid, law, 0.9);
-    const Real dtOrderThree = cflTimeStep(u3, meshOrderThree, fluid, law, 0.9);
+    const Real dtOrderOne = cflTimeStep(u1, meshOrderOne, model, 0.9);
+    const Real dtOrderThree = cflTimeStep(u3, meshOrderThree, model, 0.9);
     CHECK(dtOrderThree < dtOrderOne);
  
-    const Real dtHalfCfl = cflTimeStep(u1, meshOrderOne, fluid, law, 0.45);
+    const Real dtHalfCfl = cflTimeStep(u1, meshOrderOne, model, 0.45);
     CHECK(dtHalfCfl == Approx(0.5 * dtOrderOne).epsilon(1e-9));
 }
