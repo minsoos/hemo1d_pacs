@@ -76,7 +76,7 @@ TEST_CASE("BoundarySolver: Single vessel with a prescribed inlet and stays stabl
     LaxFriedrichsFlux flux;
     MinmodLimiter limiter;
     const BloodFlowModel model(law, FluidProperties{});
-    BoundarySolver bSolver(network, mesh, law, FluidProperties{});
+    BoundarySolver bSolver(network, mesh, model);
     Solver solver(mesh, model, flux, bSolver, &limiter);
 
     Real time = 0.0;
@@ -113,7 +113,7 @@ TEST_CASE("BoundarySolver: Example implementtion",
     HllFlux flux;
     MinmodLimiter limiter;
     const BloodFlowModel model(law, FluidProperties{});
-    BoundarySolver bSolver(network, mesh, law, FluidProperties{});
+    BoundarySolver bSolver(network, mesh, model);
     Solver solver(mesh, model, flux, bSolver, &limiter);
 
     Real time = 0.0;

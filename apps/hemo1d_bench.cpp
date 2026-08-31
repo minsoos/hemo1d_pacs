@@ -216,7 +216,7 @@ StepBreakdown benchmarkStep(Index elementsPerVessel, int repeats) {
     HllFlux flux;
     MinmodLimiter limiter;
     BloodFlowModel model(law, network.fluid());
-    BoundarySolver resolver(network, mesh, law, network.fluid());
+    BoundarySolver resolver(network, mesh, model);
     resolver.solve(u, 0.0, 1e-5);
     Solver solver(mesh, model, flux, resolver, &limiter);
  

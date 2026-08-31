@@ -31,7 +31,7 @@ Simulation::Simulation(
     ),
     boundarySolver_(
         std::make_unique<physics::BoundarySolver>(
-            network_, mesh_, *tubeLaw_, network_.fluid()
+            network_, mesh_, model_
         )
     ),
     solver_(
