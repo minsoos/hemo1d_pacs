@@ -6,7 +6,10 @@
 
 #include "hemo1d/dg/mesh.hpp"
 #include "hemo1d/physics/state.hpp"
-#include "hemo1d/physics/tube_law.hpp"
+
+namespace hemo1d::physics {
+    class BloodFlowModel;
+}
 
 namespace hemo1d::output {
  
@@ -41,7 +44,10 @@ public:
     Id vesselId() const noexcept{return vesselId_;}
     Real z() const noexcept{return z_;}
 
-    ProbeSample sample(const physics::State& state, Real time, const physics::TubeLaw& tubeLaw) const;
+    ProbeSample sample(
+        const physics::State& state, Real time, 
+        const physics::BloodFlowModel& model
+    ) const;
 };
 
 class ProbeRecorder{
@@ -50,7 +56,7 @@ private:
     std::vector<std::vector<ProbeSample>> history_;
 public:
     Probe& addProbe(std::string name, Id vesselId, Real z, const dg::Mesh& mesh);
-    void record(const physics::State& state, Real time, const physics::TubeLaw& tubeLaw);
+    void record(const physics::State& state, Real time, const physics::BloodFlowModel& model);
     const std::vector<ProbeSample>& samples(const std::string& name) const;
     void writeCsv(const std::filesystem::path& directory) const;
 

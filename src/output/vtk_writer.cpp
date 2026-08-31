@@ -5,10 +5,15 @@
 #include <sstream>
 #include <stdexcept>
 
+#include "hemo1d/physics/blood_flow_model.hpp"
+
 namespace hemo1d::output {
 
-void writeVtk(const std::filesystem::path& path, const dg::Mesh& mesh, const physics::State& state,
-              const physics::TubeLaw& tubeLaw, Real rho, Real time) {
+void writeVtk(
+    const std::filesystem::path& path, const dg::Mesh& mesh, 
+    const physics::State& state, const physics::BloodFlowModel& model, 
+    Real time
+) {
     std::ofstream file(path);
     if (!file) {
         throw std::runtime_error("writeVtk: cannot open file " + path.string());
@@ -58,7 +63,7 @@ void writeVtk(const std::filesystem::path& path, const dg::Mesh& mesh, const phy
     for (const dg::Element& el : elements) {
         const VesselParameters& p = el.vesselParameters();
         for (Index i = 0; i < el.numDofs(); ++i) {
-            file << tubeLaw.pressure(state.A[el.dofOffset() + i], p.A0, p.beta) << "\n";
+            file << model.pressure(state.A[el.dofOffset() + i], p) << "\n";
         }
     }
 
@@ -66,10 +71,8 @@ void writeVtk(const std::filesystem::path& path, const dg::Mesh& mesh, const phy
     for (const dg::Element& el : elements) {
         const VesselParameters& p = el.vesselParameters();
         for (Index i = 0; i < el.numDofs(); ++i) {
-            const Real A = state.A[el.dofOffset() + i];
-            const Real Q = state.Q[el.dofOffset() + i];
-            const Real u = Q / A;
-            file << (tubeLaw.pressure(A, p.A0, p.beta) + 0.5 * rho * u * u) << "\n";
+            const Index idx = el.dofOffset() + i;
+            file << model.totalPressure({state.A[idx], state.Q[idx]}, p) << "\n";
         }
     }
 
@@ -85,12 +88,12 @@ VtkSeriesWriter::VtkSeriesWriter(std::filesystem::path directory, std::string ba
 }
 
 void VtkSeriesWriter::write(const dg::Mesh& mesh, const physics::State& state,
-                             const physics::TubeLaw& tubeLaw, Real rho, Real time) {
+                             const physics::BloodFlowModel& model, Real time) {
     std::ostringstream nameStream;
     nameStream << baseName_ << '_' << std::setfill('0') << std::setw(5) << nextIndex_ << ".vtk";
     const std::string fileName = nameStream.str();
 
-    writeVtk(directory_ / fileName, mesh, state, tubeLaw, rho, time);
+    writeVtk(directory_ / fileName, mesh, state, model, time);
     writtenSnapshots_.emplace_back(nextIndex_, time);
     ++nextIndex_;
 

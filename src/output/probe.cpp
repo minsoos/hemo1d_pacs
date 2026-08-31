@@ -5,6 +5,8 @@
 #include <stdexcept>
 #include <string>
 
+#include "hemo1d/physics/blood_flow_model.hpp"
+
 namespace hemo1d::output {
 
 namespace {
@@ -32,7 +34,10 @@ Probe::Probe(std::string name, Id vesselId, Real z, const dg::Mesh& mesh):
         name_(std::move(name)), vesselId_(vesselId), z_(z),
         element_(&locateElement(vesselId, z, mesh, referenceCoordinate_)) {}
 
-ProbeSample Probe::sample(const physics::State& state, Real time, const physics::TubeLaw& tubeLaw) const {
+ProbeSample Probe::sample(
+    const physics::State& state, Real time, 
+    const physics::BloodFlowModel& model
+) const {
     const std::vector<Real> l = element_->referenceElement().basis().evaluate(referenceCoordinate_);
     const Index offset = element_->dofOffset();
 
@@ -48,7 +53,7 @@ ProbeSample Probe::sample(const physics::State& state, Real time, const physics:
     result.time = time;
     result.A = A;
     result.Q = Q;
-    result.pressure = tubeLaw.pressure(A, p.A0, p.beta);
+    result.pressure = model.pressure(A, p);
     result.velocity = Q / A;
     return result;
 }
@@ -59,9 +64,9 @@ Probe& ProbeRecorder::addProbe(std::string name, Id vesselId, Real z, const dg::
     return probes_.back();
 }
 
-void ProbeRecorder::record(const physics::State& state, Real time, const physics::TubeLaw& tubeLaw) {
+void ProbeRecorder::record(const physics::State& state, Real time, const physics::BloodFlowModel& model) {
     for (Index i=0; i<probes_.size(); ++i) {
-        history_[i].push_back(probes_[i].sample(state, time, tubeLaw));
+        history_[i].push_back(probes_[i].sample(state, time, model));
     }
 }
 

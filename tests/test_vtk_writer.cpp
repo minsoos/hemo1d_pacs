@@ -7,6 +7,7 @@
  
 #include "hemo1d/dg/mesh.hpp"
 #include "hemo1d/output/vtk_writer.hpp"
+#include "hemo1d/physics/blood_flow_model.hpp"
 
 using namespace hemo1d;
 using namespace hemo1d::dg;
@@ -56,7 +57,8 @@ TEST_CASE("writeVtk produces a well-formed legacy VTK PolyData file", "[vtk_writ
     const std::filesystem::path path =
         std::filesystem::temp_directory_path() / "hemo1d_test_snapshot.vtk";
     LinearElasticTubeLaw law;
-    writeVtk(path, mesh, state, law, 1.05, 0.5);
+    const BloodFlowModel model(law, FluidProperties{1.05});
+    writeVtk(path, mesh, state, model, 0.5);
 
     REQUIRE(std::filesystem::exists(path));
 
@@ -88,16 +90,17 @@ TEST_CASE("VtkSeriesWriter writes numbered snapshots and a pvd collection", "[vt
 
     const std::filesystem::path dir = std::filesystem::temp_directory_path() / "hemo1d_test_series";
     LinearElasticTubeLaw law;
+    const BloodFlowModel model(law, FluidProperties{1.05});
  
     VtkSeriesWriter writer(dir, "series");
-    writer.write(mesh, state, law, 1.05, 0.0);
+    writer.write(mesh, state, model, 0.0);
 
     for (Index i = 0; i < state.size(); ++i) {
         state.A[i] +=0.01;
         state.Q[i] +=0.01;
     }
 
-    writer.write(mesh, state, law, 1.05, 0.1);
+    writer.write(mesh, state, model, 0.1);
 
     REQUIRE(std::filesystem::exists(dir / "series_00000.vtk"));
     REQUIRE(std::filesystem::exists(dir / "series_00001.vtk"));

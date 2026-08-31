@@ -121,11 +121,11 @@ void Simulation::run(
         ++stepIndex;
 
         if (recordEvery > 0 && stepIndex % recordEvery == 0) {
-            probeRecorder_.record(state_, time_, *tubeLaw_);
+            probeRecorder_.record(state_, time_, model_);
         }
 
         if (vtkWriter && vtkEvery > 0 && stepIndex % vtkEvery == 0) {
-            vtkWriter->write(mesh_, state_, *tubeLaw_, network_.fluid().density, time_);
+            vtkWriter->write(mesh_, state_, model_, time_);
         }
     }
 }
