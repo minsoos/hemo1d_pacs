@@ -1,6 +1,7 @@
 #pragma once
 
 #include "hemo1d/core/types.hpp"
+#include "hemo1d/core/vessel.hpp"
 
 namespace hemo1d::physics {
 
@@ -11,14 +12,14 @@ class TubeLaw {
 public:
     virtual ~TubeLaw() = default;
 
-    virtual Real pressure(Real A, Real A0, Real beta) const = 0;
-    virtual Real pressureDerivative(Real A, Real A0, Real beta) const = 0;
+    virtual Real pressure(Real A, const VesselParameters& p) const = 0;
+    virtual Real pressureDerivative(Real A, const VesselParameters& p) const = 0;
 
-    virtual Real pressureFluxIntegral(Real A, Real A0, Real beta, Real rho) const = 0;
+    virtual Real pressureFluxIntegral(Real A, const VesselParameters& p, Real rho) const = 0;
     
-    virtual Real areaFromPressure(Real P, Real A0, Real beta) const = 0;
+    virtual Real areaFromPressure(Real P, const VesselParameters& p) const = 0;
 
-    Real waveSpeed(Real A, Real A0, Real beta, Real rho) const;
+    Real waveSpeed(Real A, const VesselParameters& p, Real rho) const;
 };
 
 
@@ -26,10 +27,10 @@ public:
 // P - P0 = beta * (sqrt(A) - sqrt(A0)) / A0
 class LinearElasticTubeLaw : public TubeLaw {
 public:
-    Real pressure(Real A, Real A0, Real beta) const override;
-    Real pressureDerivative(Real A, Real A0, Real beta) const override;
-    Real pressureFluxIntegral(Real A, Real A0, Real beta, Real rho) const override;
-    Real areaFromPressure(Real P, Real A0, Real beta) const override;
+    Real pressure(Real A, const VesselParameters& p) const override;
+    Real pressureDerivative(Real A, const VesselParameters& p) const override;
+    Real pressureFluxIntegral(Real A, const VesselParameters& p, Real rho) const override;
+    Real areaFromPressure(Real P, const VesselParameters& p) const override;
 };
 
 }  // namespace hemo1d::physics

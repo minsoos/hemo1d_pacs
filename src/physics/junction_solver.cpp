@@ -14,7 +14,7 @@ namespace {
 // Derivatives of BloodFlowModel::totalPressure w.r.t. the branch state,
 // needed for the Newton Jacobian of the pressure-continuity rows.
 Real totalPressureDA(SectionState u, const VesselParameters& p, const BloodFlowModel& model) {
-    return model.tubeLaw().pressureDerivative(u.A, p.A0, p.beta) -
+    return model.tubeLaw().pressureDerivative(u.A, p) -
            model.density() * u.Q * u.Q / (u.A * u.A * u.A);
 }
 

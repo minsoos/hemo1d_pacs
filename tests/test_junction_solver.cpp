@@ -75,7 +75,7 @@ TEST_CASE("solveJunction satisfies mass conservation and pressure continuity for
     // Continuity of total pressure across all branches.
     auto totalPressure = [&](std::size_t i) {
         const Real u = sol.Q[i] / sol.A[i];
-        return kLaw.pressure(sol.A[i], branches[i].params.A0, branches[i].params.beta) + 0.5 * kRho * u * u;
+        return kLaw.pressure(sol.A[i], branches[i].params) + 0.5 * kRho * u * u;
     };
     const Real p0 = totalPressure(0);
     CHECK(totalPressure(1) == Approx(p0).margin(1e-6));

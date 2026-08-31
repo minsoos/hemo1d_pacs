@@ -42,7 +42,7 @@ SectionState solveExteriorBoundary(
 				break;
 			case PrescribedQuantity::Pressure:
 				M(0,0) = 1.0;
-				rhs[0] = model.tubeLaw().areaFromPressure(prescribedValue, p.A0, p.beta);
+				rhs[0] = model.tubeLaw().areaFromPressure(prescribedValue, p);
 				break;	
 		}
 	}

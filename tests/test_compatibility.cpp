@@ -31,7 +31,7 @@ TEST_CASE("leftEigenvectors satisfies l^T H = lambda l^T", "[compatibility]") {
     const Real A = kA0 * 1.1;
     const Real Q = 0.08;
     const Real u = Q / A;
-    const Real c = kLaw.waveSpeed(A, kA0, kBeta, kRho);
+    const Real c = kLaw.waveSpeed(A, params(), kRho);
 
     // H(U) = [[0, 1], [c^2 - alpha*u^2, 2*alpha*u]] (papers/Master_Thesis.pdf).
     const Real H00 = 0.0, H01 = 1.0;
@@ -40,8 +40,8 @@ TEST_CASE("leftEigenvectors satisfies l^T H = lambda l^T", "[compatibility]") {
     const LeftEigenvectors eig = kModel.leftEigenvectors({A, Q}, params());
     const Characteristics ch = kModel.characteristics({A, Q}, params());
 
-    for (const auto& [l, lambda] : 
-         {std::make_pair(eig.lPlus, ch.lambdaPlus), std::make_pair(eig.lMinus, ch.lambdaMinus)}) {
+    for (const auto& [l, lambda] :
+         {std::pair{eig.lPlus, ch.lambdaPlus}, std::pair{eig.lMinus, ch.lambdaMinus}}) {
         const Real lhs0 = l.first * H00 + l.second * H10;
         const Real lhs1 = l.first * H01 + l.second * H11;
         CHECK(lhs0 == Approx(lambda * l.first).margin(1e-8));

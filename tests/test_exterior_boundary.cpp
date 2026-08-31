@@ -70,7 +70,7 @@ TEST_CASE("solveExteriorBoundary with a prescribed pressure matches areaFromPres
 
     const SectionState g = solveExteriorBoundary(VesselEnd::Proximal, bc, targetPressure, {p.A0, 0.05},
                                                {0.0, 0.0}, p, model, kDt);
-    CHECK(g.A == Approx(law.areaFromPressure(targetPressure, p.A0, p.beta)));
+    CHECK(g.A == Approx(law.areaFromPressure(targetPressure, p)));
 }
 
 TEST_CASE("solveExteriorBoundary non-reflecting leaves an exact steady state unchanged",

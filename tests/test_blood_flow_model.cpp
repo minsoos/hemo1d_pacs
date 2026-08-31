@@ -38,13 +38,13 @@ TEST_CASE("BloodFlowModel matches the reference blood-flow formulas", "[blood_fl
         for (Real Q : {-0.4, 0.0, 0.25}) {
             const SectionState u{A, Q};
             const Real vel = Q / A;
-            const Real c = law.waveSpeed(A, kA0, kBeta, kRho);
+            const Real c = law.waveSpeed(A, p, kRho);
             const Real cAlpha = std::sqrt(c * c + kAlpha * (kAlpha - 1.0) * vel * vel);
 
             // Physical flux F(U) = (Q, alpha Q^2/A + pressureFluxIntegral(A)).
             const SectionState f = model.physicalFlux(u, p);
             CHECK(f.A == Approx(Q));
-            CHECK(f.Q == Approx(kAlpha * Q * Q / A + law.pressureFluxIntegral(A, kA0, kBeta, kRho)));
+            CHECK(f.Q == Approx(kAlpha * Q * Q / A + law.pressureFluxIntegral(A, p, kRho)));
 
             // Eigenvalues lambda = alpha u +/- c_alpha.
             const Characteristics ch = model.characteristics(u, p);
@@ -65,8 +65,8 @@ TEST_CASE("BloodFlowModel matches the reference blood-flow formulas", "[blood_fl
             CHECK(pred.Q == Approx(Q - dt * (hQ + kKr * vel)));
 
             // Static and total pressure.
-            CHECK(model.pressure(A, p) == Approx(law.pressure(A, kA0, kBeta)));
-            CHECK(model.totalPressure(u, p) == Approx(law.pressure(A, kA0, kBeta) + 0.5 * kRho * vel * vel));
+            CHECK(model.pressure(A, p) == Approx(law.pressure(A, p)));
+            CHECK(model.totalPressure(u, p) == Approx(law.pressure(A, p) + 0.5 * kRho * vel * vel));
         }
     }
 }

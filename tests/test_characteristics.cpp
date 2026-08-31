@@ -27,7 +27,7 @@ VesselParameters params() {
 
 TEST_CASE("characteristics at rest gives symmetric +/- wave speeds", "[characteristics]") {
     const Characteristics c = kModel.characteristics({kA0, 0.0}, params());
-    const Real c0 = kLaw.waveSpeed(kA0, kA0, kBeta, kRho);
+    const Real c0 = kLaw.waveSpeed(kA0, params(), kRho);
     CHECK(c.lambdaMinus == Approx(-c0));
     CHECK(c.lambdaPlus == Approx(c0));
 }
