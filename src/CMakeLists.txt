@@ -1,6 +1,5 @@
 set(HEMO1D_CORE_SOURCES
     physics/tube_law.cpp
-    physics/characteristics.cpp
     physics/flux.cpp
     core/network.cpp
     core/node.cpp
@@ -13,7 +12,6 @@ set(HEMO1D_CORE_SOURCES
     dg/element.cpp
     dg/mesh.cpp
     io/network_parser.cpp
-    physics/compatibility.cpp
     physics/spatial_operator.cpp
     physics/cfl.cpp
     physics/slope_limiter.cpp

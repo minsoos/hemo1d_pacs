@@ -1,14 +1,25 @@
 #pragma once
 
+#include <utility>
+
 #include "hemo1d/core/network.hpp"
 #include "hemo1d/core/vessel.hpp"
-#include "hemo1d/physics/characteristics.hpp"
-#include "hemo1d/physics/compatibility.hpp"
 #include "hemo1d/physics/section_state.hpp"
 #include "hemo1d/physics/tube_law.hpp"
 
 namespace hemo1d::physics {
 
+// The two characteristic (eigenvalue) speeds of the 1D
+// blood flow hyperbolic equations at a given state.
+struct Characteristics {
+    Real lambdaMinus;  // alpha * U - c_alpha
+    Real lambdaPlus;   // alpha * U + c_alpha
+};
+
+struct LeftEigenvectors {
+    std::pair<Real, Real> lPlus;
+    std::pair<Real, Real> lMinus;
+};
 
 // The 1D blood flow conservation law together with the wall constitutive model and
 // the fluid properties. 

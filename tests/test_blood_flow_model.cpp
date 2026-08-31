@@ -4,9 +4,6 @@
 #include <catch2/catch_test_macros.hpp>
 
 #include "hemo1d/physics/blood_flow_model.hpp"
-#include "hemo1d/physics/characteristics.hpp"
-#include "hemo1d/physics/compatibility.hpp"
-#include "hemo1d/physics/conservation_law.hpp"
 
 using namespace hemo1d;
 using namespace hemo1d::physics;
@@ -29,10 +26,10 @@ VesselParameters params() {
 }
 } // namespace
 
-// BloodFlowModel is introduced as a thin wrapper over the existing free
-// functions; this pins that it reproduces them exactly, before any caller is
-// migrated onto it.
-TEST_CASE("BloodFlowModel reproduces the free-function physics", "[blood_flow_model]") {
+// Cross-checks BloodFlowModel's pointwise physics against independently written
+// reference formulas (papers/Master_Thesis.pdf Sect. 2.2), so a regression in
+// the model's kernel is caught here rather than only through a full simulation.
+TEST_CASE("BloodFlowModel matches the reference blood-flow formulas", "[blood_flow_model]") {
     const LinearElasticTubeLaw law;
     const BloodFlowModel model(law, FluidProperties{kRho});
     const VesselParameters p = params();
@@ -40,31 +37,36 @@ TEST_CASE("BloodFlowModel reproduces the free-function physics", "[blood_flow_mo
     for (Real A : {0.9 * kA0, kA0, 1.15 * kA0}) {
         for (Real Q : {-0.4, 0.0, 0.25}) {
             const SectionState u{A, Q};
+            const Real vel = Q / A;
+            const Real c = law.waveSpeed(A, kA0, kBeta, kRho);
+            const Real cAlpha = std::sqrt(c * c + kAlpha * (kAlpha - 1.0) * vel * vel);
 
-            const auto [fA, fQ] = physicalFlux(A, Q, kA0, kBeta, kAlpha, kRho, law);
+            // Physical flux F(U) = (Q, alpha Q^2/A + pressureFluxIntegral(A)).
             const SectionState f = model.physicalFlux(u, p);
-            CHECK(f.A == Approx(fA));
-            CHECK(f.Q == Approx(fQ));
+            CHECK(f.A == Approx(Q));
+            CHECK(f.Q == Approx(kAlpha * Q * Q / A + law.pressureFluxIntegral(A, kA0, kBeta, kRho)));
 
-            const Characteristics cRef = computeCharacteristics(A, Q, kA0, kBeta, kAlpha, kRho, law);
-            const Characteristics c = model.characteristics(u, p);
-            CHECK(c.lambdaMinus == Approx(cRef.lambdaMinus));
-            CHECK(c.lambdaPlus == Approx(cRef.lambdaPlus));
+            // Eigenvalues lambda = alpha u +/- c_alpha.
+            const Characteristics ch = model.characteristics(u, p);
+            CHECK(ch.lambdaMinus == Approx(kAlpha * vel - cAlpha));
+            CHECK(ch.lambdaPlus == Approx(kAlpha * vel + cAlpha));
 
-            const LeftEigenvectors eRef = computeLeftEigenvectors(A, Q, kA0, kBeta, kAlpha, kRho, law);
+            // Left eigenvectors: (+/- c_alpha - alpha u, 1).
             const LeftEigenvectors e = model.leftEigenvectors(u, p);
-            CHECK(e.lPlus.first == Approx(eRef.lPlus.first));
-            CHECK(e.lMinus.first == Approx(eRef.lMinus.first));
+            CHECK(e.lPlus.first == Approx(cAlpha - kAlpha * vel));
+            CHECK(e.lPlus.second == Approx(1.0));
+            CHECK(e.lMinus.first == Approx(-cAlpha - kAlpha * vel));
 
-            const auto [pA, pQ] =
-                compatibilityPrediction(A, Q, 0.3, -0.2, kA0, kBeta, kAlpha, kRho, kKr, law, 1e-4);
-            const SectionState pred = model.compatibilityPrediction(u, {0.3, -0.2}, p, 1e-4);
-            CHECK(pred.A == Approx(pA));
-            CHECK(pred.Q == Approx(pQ));
+            // Forward-Euler compatibility prediction with a nonzero gradient.
+            const Real dAdz = 0.3, dQdz = -0.2, dt = 1e-4;
+            const Real hQ = (c * c - kAlpha * vel * vel) * dAdz + 2.0 * kAlpha * vel * dQdz;
+            const SectionState pred = model.compatibilityPrediction(u, {dAdz, dQdz}, p, dt);
+            CHECK(pred.A == Approx(A - dt * dQdz));
+            CHECK(pred.Q == Approx(Q - dt * (hQ + kKr * vel)));
 
+            // Static and total pressure.
             CHECK(model.pressure(A, p) == Approx(law.pressure(A, kA0, kBeta)));
-            CHECK(model.totalPressure(u, p) ==
-                  Approx(law.pressure(A, kA0, kBeta) + 0.5 * kRho * (Q / A) * (Q / A)));
+            CHECK(model.totalPressure(u, p) == Approx(law.pressure(A, kA0, kBeta) + 0.5 * kRho * vel * vel));
         }
     }
 }
