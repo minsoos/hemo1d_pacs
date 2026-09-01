@@ -3,8 +3,8 @@
 #include <algorithm>
 #include <cmath>
 #include <stdexcept>
+#include <Eigen/Dense>
 
-#include "hemo1d/core/linear_algebra.hpp"
 #include "hemo1d/physics/blood_flow_model.hpp"
 
 namespace hemo1d::physics {
@@ -50,7 +50,7 @@ JunctionSolution solveJunction(const std::vector<JunctionBranch>& branches,
     }
 
     const Index n = 2 * N;
-    std::vector<Real> x(n);
+    Eigen::VectorXd x(n);
     for (std::size_t i = 0; i < N; ++i) {
         x[2 * i] = branches[i].trace.A;
         x[2 * i + 1] = branches[i].trace.Q;
@@ -59,8 +59,8 @@ JunctionSolution solveJunction(const std::vector<JunctionBranch>& branches,
     int iter = 0;
     Real residualNorm = 0.0;
     for (; iter < maxIterations; ++iter) {
-        std::vector<Real> F(n, 0.0);
-        DenseMatrix J = DenseMatrix::Zero(n, n);
+        Eigen::VectorXd F = Eigen::VectorXd::Zero(n);
+        Eigen::MatrixXd J = Eigen::MatrixXd::Zero(n, n);
 
         // Conservation of mass (row 0), linear.
         for (std::size_t i = 0; i < N; ++i) {
@@ -93,13 +93,9 @@ JunctionSolution solveJunction(const std::vector<JunctionBranch>& branches,
             J(row, 2 * i + 1) = lOut[i].second;
         }
 
-        Real fNormSq = 0.0;
-        for (Real f : F) fNormSq += f * f;
-        residualNorm = std::sqrt(fNormSq);
+        residualNorm = F.norm();
 
-        std::vector<Real> negF(n);
-        for (Index k = 0; k < n; ++k) negF[k] = -F[k];
-        const std::vector<Real> delta = solveLinearSystem(J, negF);
+        const Eigen::VectorXd delta = J.partialPivLu().solve(-F);
 
         Real maxRelChange = 0.0;
         for (Index k = 0; k < n; ++k) {

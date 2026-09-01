@@ -5,7 +5,6 @@ set(HEMO1D_CORE_SOURCES
     core/node.cpp
     core/vessel.cpp
     io/time_series.cpp
-    core/linear_algebra.cpp
     dg/quadrature.cpp
     dg/nodal_basis.cpp
     dg/reference_element.cpp

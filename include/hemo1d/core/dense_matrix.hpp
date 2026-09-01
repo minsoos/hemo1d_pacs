@@ -6,6 +6,6 @@
 
 namespace hemo1d {
 
-using DenseMatrix = Eigen::MatrixXd;
+using DenseMatrix = Eigen::Matrix<Real, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor>;
 
 } // namespace hemo1d

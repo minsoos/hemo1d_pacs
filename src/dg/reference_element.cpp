@@ -1,6 +1,5 @@
 #include "hemo1d/dg/reference_element.hpp"
 
-#include "hemo1d/core/linear_algebra.hpp"
 
 namespace hemo1d::dg {
 
@@ -40,7 +39,7 @@ ReferenceElement::ReferenceElement(unsigned order)
         }
     }
 
-    massMatrixInverse_ = invertDense(massMatrix_);
+    massMatrixInverse_ = massMatrix_.partialPivLu().solve(DenseMatrix::Identity(n, n));
 }
 
 
