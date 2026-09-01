@@ -22,6 +22,26 @@ FetchContent_Declare(
     GIT_TAG v3.11.3
 )
 FetchContent_MakeAvailable(nlohmann_json)
+
+FetchContent_Declare(
+    Eigen3
+    GIT_REPOSITORY https://gitlab.com/libeigen/eigen.git
+    GIT_TAG 3.4.0
+    GIT_SHALLOW TRUE
+)
+
+if(POLICY CMP0169)
+    cmake_policy(SET CMP0169 OLD)
+endif()
+
+FetchContent_GetProperties(Eigen3)
+if(NOT eigen3_POPULATED)
+    FetchContent_Populate(Eigen3)
+endif()
+
+add_library(eigen_headers INTERFACE)
+target_include_directories(eigen_headers SYSTEM INTERFACE ${eigen3_SOURCE_DIR})
+add_library(Eigen3::Eigen ALIAS eigen_headers)
  
 find_package(OpenMP QUIET)
  
