@@ -17,7 +17,7 @@ SectionState solveExteriorBoundary(
 	const std::pair<Real, Real> lIn = (end == VesselEnd::Proximal) ? eig.lPlus : eig.lMinus;
 	const std::pair<Real, Real> lOut = (end == VesselEnd::Proximal) ? eig.lMinus : eig.lPlus;
 
-	DenseMatrix M(2, 2, 0.0);
+	DenseMatrix M = DenseMatrix::Zero(2, 2);
 	std::vector<Real> rhs(2, 0.0);
 	if (bc.type == BoundaryConditionType::NonReflecting){
 		const SectionState nr = model.compatibilityPrediction(trace, SectionGradient{}, p, dt);

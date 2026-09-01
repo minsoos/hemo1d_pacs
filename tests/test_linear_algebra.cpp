@@ -35,7 +35,7 @@ TEST_CASE("solveLinearSystem uses partial pivoting when needed", "[linear_algebr
 }
  
 TEST_CASE("solveLinearSystem rejects a singular matrix", "[linear_algebra]") {
-    DenseMatrix A(2, 2, 0.0);
+    DenseMatrix A = DenseMatrix::Zero(2, 2);
     A(0, 0) = 1.0;
     A(0, 1) = 2.0;
     A(1, 0) = 2.0;

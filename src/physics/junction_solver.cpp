@@ -60,7 +60,7 @@ JunctionSolution solveJunction(const std::vector<JunctionBranch>& branches,
     Real residualNorm = 0.0;
     for (; iter < maxIterations; ++iter) {
         std::vector<Real> F(n, 0.0);
-        DenseMatrix J(n, n, 0.0);
+        DenseMatrix J = DenseMatrix::Zero(n, n);
 
         // Conservation of mass (row 0), linear.
         for (std::size_t i = 0; i < N; ++i) {
@@ -77,7 +77,7 @@ JunctionSolution solveJunction(const std::vector<JunctionBranch>& branches,
         for (std::size_t k = 0; k + 1 < N; ++k) {
             const std::size_t i = k + 1;
             const SectionState ui{x[2 * i], x[2 * i + 1]};
-            const Real row = 1 + k;
+            const std::size_t row = 1 + k;
             F[row] = Ptot0 - model.totalPressure(ui, branches[i].params);
             J(row, 0) = dPtot0dA;
             J(row, 1) = dPtot0dQ;

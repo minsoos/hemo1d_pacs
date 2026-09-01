@@ -30,7 +30,7 @@ void NodalBasis::computeBarycentricWeights() {
 
 void NodalBasis::computeDifferentiationMatrix() {
     const Index n = nodes_.size();
-    diffMatrix_ = DenseMatrix(n, n);
+    diffMatrix_ = DenseMatrix::Zero(n, n);
     for (Index i = 0; i < n; ++i) {
         Real rowSum = 0.0;
         for (Index j = 0; j < n; ++j) {
