@@ -94,6 +94,7 @@ std::vector<output::FieldSample> Simulation::fieldSnapshot() const {
 void Simulation::step(Real dt) {
     boundarySolver_->solve(state_, time_, dt);
     solver_->step(state_, time_, dt);
+    boundarySolver_->commit(state_, time_, dt);
     time_ += dt;
 }
 

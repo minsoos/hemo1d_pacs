@@ -18,6 +18,7 @@ set(HEMO1D_CORE_SOURCES
     physics/exterior_boundary.cpp
     physics/junction_solver.cpp
     physics/boundary_solver.cpp
+    physics/terminal_coupling.cpp
     output/probe.cpp
     output/vtk_writer.cpp
     simulation.cpp
