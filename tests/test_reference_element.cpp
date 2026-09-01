@@ -44,9 +44,9 @@ TEST_CASE("ReferenceElement basisAtQuadrature reproduces the partition of unity"
           "[reference_element]") {
     const ReferenceElement ref(3);
     const DenseMatrix& L = ref.basisAtQuadrature();
-    for (Index q = 0; q < L.rows(); ++q) {
+    for (Index q = 0; q < static_cast<Index>(L.rows()); ++q) {
         Real sum = 0.0;
-        for (Index i = 0; i < L.cols(); ++i) sum += L(q, i);
+        for (Index i = 0; i < static_cast<Index>(L.cols()); ++i) sum += L(q, i);
         CHECK(sum == Approx(1.0).margin(1e-12));
     }
 }

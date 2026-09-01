@@ -5,7 +5,6 @@ set(HEMO1D_CORE_SOURCES
     core/node.cpp
     core/vessel.cpp
     io/time_series.cpp
-    core/linear_algebra.cpp
     dg/quadrature.cpp
     dg/nodal_basis.cpp
     dg/reference_element.cpp
@@ -37,7 +36,8 @@ target_include_directories(hemo1d_core PUBLIC
 
 target_compile_features(hemo1d_core PUBLIC cxx_std_20)
 
-target_link_libraries(hemo1d_core PUBLIC nlohmann_json::nlohmann_json)
+target_link_libraries(hemo1d_core PUBLIC nlohmann_json::nlohmann_json Eigen3::Eigen)
+target_compile_definitions(hemo1d_core PUBLIC EIGEN_DONT_PARALLELIZE)
 
 if(OpenMP_CXX_FOUND)
     target_link_libraries(hemo1d_core PUBLIC OpenMP::OpenMP_CXX)

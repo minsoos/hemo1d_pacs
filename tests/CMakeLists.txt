@@ -4,7 +4,6 @@ set(HEMO1D_TEST_SOURCES
     test_flux.cpp
     test_network.cpp
     test_time_series.cpp
-    test_linear_algebra.cpp
     test_quadrature.cpp
     test_nodal_basis.cpp
     test_reference_element.cpp
