@@ -79,7 +79,7 @@ std::optional<BoundaryConditionSpec> parseBoundaryCondition(const json& j,
             if (!j.contains("boundary_condition")) return std::nullopt;
             const json& bc = j.at("boundary_condition");
             
-            const std::set<std::string> allowed_keys2 = {"type", "quantity", "csv_file"};
+            const std::set<std::string> allowed_keys2 = {"type", "quantity", "csv_file", "model", "params"};
             rejectUnknownKeys(bc, allowed_keys2, "parseBoundaryCondition");
 
             BoundaryConditionSpec spec;

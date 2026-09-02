@@ -80,6 +80,7 @@ void BoundarySolver::solve(const State& state, Real time, Real dt){
             iface.params = el.vesselParameters();
             iface.trace = bt.u;
             iface.grad = bt.g;
+            iface.rho = model_.density();
 
             const SectionState ghost = terminalCouplings_.at(node.id())->solve(iface, model_, time, dt);
             
