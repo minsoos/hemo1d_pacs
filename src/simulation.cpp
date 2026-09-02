@@ -57,6 +57,26 @@ void Simulation::setUniformInitialCondition(
     }
 }
 
+void Simulation::setCoupling(
+    Id nodeId, std::unique_ptr<physics::TerminalCoupling> coupling
+) {
+    boundarySolver_->setCoupling(nodeId, std::move(coupling));
+}
+
+void Simulation::setCouplingCallback(
+    Id nodeId, CouplingSolveFn solveFn, CouplingCommitFn commitFn
+) {
+    boundarySolver_->setCoupling(
+        nodeId, std::make_unique<physics::CallbackCoupling>(std::move(solveFn), std::move(commitFn))
+    );
+}
+
+std::vector<Real> Simulation::couplingState(Id nodeId) const {
+    const physics::TerminalCoupling* c = boundarySolver_->coupling(nodeId);
+    return c ? c->internalState() : std::vector<Real>{};
+}
+
+
 output::Probe& Simulation::addProbe(
     const std::string& name, Id vesselId, Real z
 ) {

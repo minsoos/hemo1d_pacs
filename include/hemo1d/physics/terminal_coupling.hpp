@@ -2,6 +2,9 @@
 
 #include <functional>
 #include <memory>
+#include <string>
+#include <unordered_map>
+#include <vector>
 
 #include "hemo1d/core/node.hpp"
 #include "hemo1d/core/vessel.hpp"
@@ -32,6 +35,8 @@ public:
         SectionState /*resolved*/, const TerminalInterface& /*iface*/, 
         const BloodFlowModel& /*model*/, Real /*time*/, Real /*dt*/
     ) {}
+
+    virtual std::vector<Real> internalState() const { return {}; }
 };
 
 
@@ -79,6 +84,25 @@ public:
 private:
     SolveFn resolve_;
     CommitFn commit_;
+};
+
+
+class TerminalCouplingRegistry {
+public:
+    using Builder = std::function<std::unique_ptr<TerminalCoupling>(const std::string& paramsJson)>;
+
+    static TerminalCouplingRegistry& instance();
+
+    void add(std::string name, Builder builder);
+    bool has(const std::string& name) const { return builders_.count(name) != 0; }
+
+    std::unique_ptr<TerminalCoupling> build(
+        const std::string& name,
+        const std::string& paramsJson
+    ) const;
+
+private:
+    std::unordered_map<std::string, Builder> builders_;
 };
 
 std::unique_ptr<TerminalCoupling> makeTerminalCoupling(const BoundaryConditionSpec& spec);

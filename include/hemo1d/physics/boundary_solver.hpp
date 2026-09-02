@@ -42,6 +42,8 @@ public:
 
     void setCoupling(Id nodeId, std::unique_ptr<TerminalCoupling> coupling);
 
+    const TerminalCoupling* coupling(Id nodeId) const;
+
     std::pair<Real, Real> exteriorState(Id vesselId, VesselEnd end, Real time) const override;
 
 };

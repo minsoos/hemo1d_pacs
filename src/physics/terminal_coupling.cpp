@@ -57,6 +57,40 @@ void CallbackCoupling::commit(
     if (commit_) commit_(resolved, iface, time, dt);
 }
 
+// -------- Registry ---------------
+
+TerminalCouplingRegistry& TerminalCouplingRegistry::instance() {
+    static TerminalCouplingRegistry registry;
+    return registry;
+}
+
+void TerminalCouplingRegistry::add(std::string name, Builder builder) {
+    if (!builder) throw std::invalid_argument(
+        "TerminalCouplingRegistry::add: null builder"
+    );
+
+    auto [it, inserted] = builders_.emplace(std::move(name), std::move(builder));
+    if (!inserted) {
+        throw std::invalid_argument(
+            "TerminalCouplingRegistry::add: model '" + it->first + 
+            "' is already registered"
+        );
+    }
+}
+
+std::unique_ptr<TerminalCoupling> TerminalCouplingRegistry::build(
+    const std::string& name, const std::string& paramsJson
+) const {
+    const auto it = builders_.find(name);
+    if (it == builders_.end()) {
+        throw std::invalid_argument(
+            "makeTerminalCoupling: no terminal-coupling model named '" + name +
+            "' is registered (is hemo1d_models linked and registerBuiltinModels() called?)"
+        );
+    }
+    return it->second(paramsJson);
+}
+
 // -------- Factory -------------
 
 std::unique_ptr<TerminalCoupling> makeTerminalCoupling(const BoundaryConditionSpec& spec) {
@@ -65,6 +99,8 @@ std::unique_ptr<TerminalCoupling> makeTerminalCoupling(const BoundaryConditionSp
             return std::make_unique<NonReflectingCoupling>();
         case BoundaryConditionType::Prescribed:
             return std::make_unique<PrescribedCoupling>(spec, io::TimeSeries::fromCsv(spec.csvFile));
+        case BoundaryConditionType::External:
+            return TerminalCouplingRegistry::instance().build(spec.modelName, spec.modelParams);
     }
     throw std::invalid_argument("makeTerminalCoupling: unhandled boundary condition type");
 }

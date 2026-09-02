@@ -25,10 +25,14 @@ void rejectUnknownKeys(const json& j, const std::set<std::string>& allowed, cons
     }
 }
 
+bool endsWith(const std::string& s, const std::string& suffix) {
+    return s.size() >= suffix.size() && s.compare(s.size() - suffix.size(), suffix.size(), suffix) == 0;
+}
 
 BoundaryConditionType parseBcType(const std::string& s){
     if (s=="non_reflecting") return BoundaryConditionType::NonReflecting;
     if (s=="prescribed") return BoundaryConditionType::Prescribed;
+    if (s=="external") return BoundaryConditionType::External;
     throw std::runtime_error("Unknown boundary condition type: \"" + s + "\" ( \"non_reflecting\" or \"prescribed\")");
 }
 
@@ -83,7 +87,16 @@ std::optional<BoundaryConditionSpec> parseBoundaryCondition(const json& j,
             if (spec.type == BoundaryConditionType::Prescribed){
                 spec.quantity = parsePrescribedQuantity(bc.at("quantity").get<std::string>());
                 const std::string csvFile = bc.at("csv_file").get<std::string>();
-                spec.csvFile = baseDir / csvFile;
+                spec.csvFile = (baseDir / csvFile).lexically_normal().string();
+            } else if (spec.type == BoundaryConditionType::External) {
+                spec.modelName = bc.at("model").get<std::string>();
+                json params = bc.value("params", json::object());
+                for (auto& [key, value] : params.items()) {
+                    if (value.is_string() && (endsWith(key, "_csv") || endsWith(key, "_file"))) {
+                        value = (baseDir / value.get<std::string>()).lexically_normal().string();
+                    }
+                }
+                spec.modelParams = params.dump();
             }
             return spec;
 }

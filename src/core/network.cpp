@@ -58,6 +58,13 @@ void Network::buildAndValidate(){
             throw std::runtime_error("Network: Prescribed boundary condition at node " + std::to_string(node.id()) + " has no csv");
         }
 
+        if (isTerminal && node.boundaryCondition()->type == BoundaryConditionType::External && 
+            node.boundaryCondition()->modelName.empty()) {
+            throw std::runtime_error(
+                "Network: external boundary condition at node " + std::to_string(node.id()) + " is missing a model name"
+            );
+        }
+
         if (!node.bifurcationAnglesRad().empty() && node.bifurcationAnglesRad().size() != node.connections().size()-1){
             throw std::runtime_error("Network: Bifurcation angles at node " + std::to_string(node.id()) + " don't match the node's number");
         }

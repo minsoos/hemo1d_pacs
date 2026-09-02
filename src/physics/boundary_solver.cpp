@@ -59,6 +59,11 @@ void BoundarySolver::setCoupling(
     it->second = std::move(coupling);
 }
 
+const TerminalCoupling* BoundarySolver::coupling(Id nodeId) const {
+    const auto it = terminalCouplings_.find(nodeId);
+    return it == terminalCouplings_.end() ? nullptr : it->second.get();
+}
+
 void BoundarySolver::solve(const State& state, Real time, Real dt){
     terminalRecords_.clear();
 
