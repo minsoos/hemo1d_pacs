@@ -21,6 +21,8 @@ set(HEMO1D_TEST_SOURCES
     test_simulation.cpp
     test_blood_flow_model.cpp
     test_compatibility.cpp
+    test_terminal_coupilng.cpp
+    test_windkessel_coupling.cpp
 )
 
 if(NOT HEMO1D_TEST_SOURCES)
@@ -39,7 +41,7 @@ FetchContent_MakeAvailable(catch2)
  
 add_executable(hemo1d_tests ${HEMO1D_TEST_SOURCES})
 
-target_link_libraries(hemo1d_tests PRIVATE hemo1d_core Catch2::Catch2WithMain)
+target_link_libraries(hemo1d_tests PRIVATE hemo1d_core hemo1d_couplings Catch2::Catch2WithMain)
  
 target_compile_definitions(hemo1d_tests PRIVATE
     HEMO1D_EXAMPLES_DIR="${PROJECT_SOURCE_DIR}/examples/networks"

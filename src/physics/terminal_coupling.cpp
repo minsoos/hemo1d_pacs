@@ -85,7 +85,7 @@ std::unique_ptr<TerminalCoupling> TerminalCouplingRegistry::build(
     if (it == builders_.end()) {
         throw std::invalid_argument(
             "makeTerminalCoupling: no terminal-coupling model named '" + name +
-            "' is registered (is hemo1d_models linked and registerBuiltinModels() called?)"
+            "' is registered (is hemo1d_couplings linked and registerBuiltinCouplings() called?)"
         );
     }
     return it->second(paramsJson);

@@ -7,7 +7,7 @@ FetchContent_Declare(
 FetchContent_MakeAvailable(pybind11)
  
 pybind11_add_module(hemo1d_py bindings.cpp)
-target_link_libraries(hemo1d_py PRIVATE hemo1d_core)
+target_link_libraries(hemo1d_py PRIVATE hemo1d_core hemo1d_couplings)
  
 set_target_properties(hemo1d_py PROPERTIES OUTPUT_NAME "hemo1d")
  
