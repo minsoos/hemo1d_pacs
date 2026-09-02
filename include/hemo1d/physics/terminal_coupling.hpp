@@ -20,6 +20,7 @@ struct TerminalInterface {
     VesselParameters params{};
     SectionState trace{};
     SectionGradient grad{};
+    Real rho = 0.0;
 };
 
 class TerminalCoupling {

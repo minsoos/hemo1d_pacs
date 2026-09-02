@@ -21,7 +21,7 @@ set(HEMO1D_TEST_SOURCES
     test_simulation.cpp
     test_blood_flow_model.cpp
     test_compatibility.cpp
-    test_terminal_coupilng.cpp
+    test_terminal_coupling.cpp
     test_windkessel_coupling.cpp
 )
 
