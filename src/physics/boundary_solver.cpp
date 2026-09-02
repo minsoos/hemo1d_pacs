@@ -2,9 +2,9 @@
 
 #include <stdexcept>
 #include <string>
+#include <utility>
 
 #include "hemo1d/physics/blood_flow_model.hpp"
-#include "hemo1d/physics/exterior_boundary.hpp"
 #include "hemo1d/physics/junction_solver.hpp"
  
 namespace hemo1d::physics {
@@ -41,41 +41,59 @@ const BoundaryTrace traceAndDerivative(const dg::Element& el, VesselEnd end, con
 BoundarySolver::BoundarySolver(const Network& network, const dg::Mesh& mesh, const BloodFlowModel& model)
     : network_(network), mesh_(mesh), model_(model) {
     for (const Node& node : network_.nodes()) {
-        if (node.kind() == NodeKind::Terminal &&
-            node.boundaryCondition()->type == BoundaryConditionType::Prescribed) {
-            prescribedSeries_.emplace(node.id(), io::TimeSeries::fromCsv(node.boundaryCondition()->csvFile));
+        if (node.kind() == NodeKind::Terminal) {
+            terminalCouplings_.emplace(node.id(), makeTerminalCoupling(*node.boundaryCondition()));
         }
     }
 }
 
+void BoundarySolver::setCoupling(
+    Id nodeId, std::unique_ptr<TerminalCoupling> coupling
+) {
+    const auto it = terminalCouplings_.find(nodeId);
+    if (it == terminalCouplings_.end()) {
+        throw std::invalid_argument(
+            "BoundarySolver::setCoupling: node " + std::to_string(nodeId) + " is not a terminal node"
+        );
+    }
+    it->second = std::move(coupling);
+}
+
+const TerminalCoupling* BoundarySolver::coupling(Id nodeId) const {
+    const auto it = terminalCouplings_.find(nodeId);
+    return it == terminalCouplings_.end() ? nullptr : it->second.get();
+}
+
 void BoundarySolver::solve(const State& state, Real time, Real dt){
+    terminalRecords_.clear();
+
     for (const Node& node : network_.nodes()){
         if (node.kind() == NodeKind::Terminal){
             const VesselConnection& conn = node.connections().front();
             const dg::Element& el = boundaryElement(mesh_, conn.vesselId, conn.end);
-            const BoundaryTrace trace = traceAndDerivative(el, conn.end, state);
+            const BoundaryTrace bt = traceAndDerivative(el, conn.end, state);
 
             const BoundaryConditionSpec& bc = *node.boundaryCondition();
 
-            Real prescribedValue = 0.0;
-            if (bc.type == BoundaryConditionType::Prescribed){
-                prescribedValue = prescribedSeries_.at(node.id()).value(time+dt);
-            }
+            TerminalInterface iface;
+            iface.end = conn.end;
+            iface.params = el.vesselParameters();
+            iface.trace = bt.u;
+            iface.grad = bt.g;
+            iface.rho = model_.density();
 
-            const SectionState ghost = solveExteriorBoundary(
-                conn.end, bc, prescribedValue, trace.u, trace.g,
-                el.vesselParameters(), model_, dt
-            );
+            const SectionState ghost = terminalCouplings_.at(node.id())->solve(iface, model_, time, dt);
             
             ghostState_[conn.vesselId][conn.end == VesselEnd::Proximal ? 0 : 1] = {ghost.A, ghost.Q};
+            terminalRecords_.push_back({node.id(), iface, ghost});
 
         } else{
             std::vector<JunctionBranch> branches;
             branches.reserve(node.connections().size());
             for (const VesselConnection& conn: node.connections()){
                 const dg::Element& el = boundaryElement(mesh_, conn.vesselId, conn.end);
-                const BoundaryTrace trace = traceAndDerivative(el, conn.end, state);
-                branches.push_back({el.vesselParameters(), conn.end, trace.u, trace.g});
+                const BoundaryTrace bt = traceAndDerivative(el, conn.end, state);
+                branches.push_back({el.vesselParameters(), conn.end, bt.u, bt.g});
             }
 
             const JunctionSolution sol = solveJunction(branches, model_, dt);
@@ -85,6 +103,12 @@ void BoundarySolver::solve(const State& state, Real time, Real dt){
             }
 
         }
+    }
+}
+
+void BoundarySolver::commit(const State& /*state*/, Real time, Real dt) {
+    for (const TerminalRecord& rec : terminalRecords_) {
+        terminalCouplings_.at(rec.nodeId)->commit(rec.resolved, rec.iface, model_, time, dt);
     }
 }
 

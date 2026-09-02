@@ -10,9 +10,11 @@
 #include "hemo1d/physics/blood_flow_model.hpp"
 #include "hemo1d/physics/boundary_solver.hpp"
 #include "hemo1d/physics/flux.hpp"
+#include "hemo1d/physics/section_state.hpp"
 #include "hemo1d/physics/slope_limiter.hpp"
 #include "hemo1d/physics/solver.hpp"
 #include "hemo1d/physics/state.hpp"
+#include "hemo1d/physics/terminal_coupling.hpp"
 #include "hemo1d/physics/tube_law.hpp"
 
 namespace hemo1d {
@@ -39,6 +41,20 @@ public:
     // Set every DOF to the given flow rate and area.
     // If area <= 0.0, it is set to the initial area of the owning vessel.
     void setUniformInitialCondition(Real flowRate = 0.0, Real area = -1.0);
+
+    // Attach any terminal coupling to a node, replacing whatever boundary
+    // condition the network defined here.
+    void setCoupling(Id nodeId, std::unique_ptr<physics::TerminalCoupling> coupling);
+
+    using CouplingSolveFn = 
+        std::function<physics::SectionState(const physics::TerminalInterface&, Real, Real)>;
+    
+    using CouplingCommitFn = 
+        std::function<void(physics::SectionState, const physics::TerminalInterface&, Real, Real)>;
+
+    void setCouplingCallback(Id nodeId, CouplingSolveFn solveFn, CouplingCommitFn commitFn = nullptr);
+
+    std::vector<Real> couplingState(Id nodeId) const;
 
     // Add a probe to a specific vessel of the network, to retrieve the 
     // values of its state at a specific physical point z.

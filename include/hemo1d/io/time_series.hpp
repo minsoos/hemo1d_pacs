@@ -13,6 +13,7 @@ private:
     std::vector<Real> values_;
 
 public:
+    TimeSeries() = default;
     TimeSeries(std::vector<Real> times, std::vector<Real> values);
     static TimeSeries fromCsv(const std::filesystem::path& path);
 

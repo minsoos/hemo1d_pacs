@@ -11,13 +11,13 @@ namespace hemo1d {
 
 // This models both, the Terminal nodes, connecting with
 // one other node, and the Junction, connecting with more nodes
-enum class NodeKind { Terminal, Junction};
+enum class NodeKind { Terminal, Junction };
 
 // Type of connection possible
-enum class BoundaryConditionType { NonReflecting, Prescribed};
+enum class BoundaryConditionType { NonReflecting, Prescribed, External };
 
 // In case it is prescribed, it is a quantity:
-enum class PrescribedQuantity { FlowRate, Velocity, Area, Pressure};
+enum class PrescribedQuantity { FlowRate, Velocity, Area, Pressure };
 
 struct BoundaryConditionSpec {
     // Default type and quantity
@@ -26,6 +26,9 @@ struct BoundaryConditionSpec {
     PrescribedQuantity quantity = PrescribedQuantity::FlowRate;
 
     std::string csvFile;
+
+    std::string modelName;
+    std::string modelParams;
 };
 
 struct VesselConnection {

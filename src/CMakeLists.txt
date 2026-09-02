@@ -18,6 +18,7 @@ set(HEMO1D_CORE_SOURCES
     physics/exterior_boundary.cpp
     physics/junction_solver.cpp
     physics/boundary_solver.cpp
+    physics/terminal_coupling.cpp
     output/probe.cpp
     output/vtk_writer.cpp
     simulation.cpp
@@ -42,3 +43,10 @@ target_compile_definitions(hemo1d_core PUBLIC EIGEN_DONT_PARALLELIZE)
 if(OpenMP_CXX_FOUND)
     target_link_libraries(hemo1d_core PUBLIC OpenMP::OpenMP_CXX)
 endif()
+
+add_library(hemo1d_couplings
+    couplings/windkessel_coupling.cpp
+    couplings/register.cpp
+)
+target_link_libraries(hemo1d_couplings PUBLIC hemo1d_core nlohmann_json::nlohmann_json)
+target_compile_features(hemo1d_couplings PUBLIC cxx_std_20)

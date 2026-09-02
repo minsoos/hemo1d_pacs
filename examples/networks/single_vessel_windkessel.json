@@ -1,0 +1,53 @@
+{
+  "_description": "Single straight vessel driven by a half-sine inlet flow pulse (data/inlet_flow_sine.csv), terminated by the 0D 'windkessel' model from hemo1d_couplings -- a two-compartment RC ladder: matched proximal impedance R1 = rho*c0/A0 (r1 < 0), an arteriole compartment (r,c) and a capillary compartment (r,c) draining to p_out = 0. Mirrors Toro (2021) Fig. 2's vascular bed with the venous side collapsed to a fixed pressure; set compartments to a single entry for the classic three-element Windkessel. The 'external' + 'model' + 'params' shape is generic: any registered model is reached the same way.",
+  "fluid": {
+    "density": 1.05,
+    "viscosity": 0.035
+  },
+  "vessels": [
+    {
+      "id": 1,
+      "name": "Omega1",
+      "length": 4.0,
+      "A0": 0.126,
+      "beta": 606060.0,
+      "alpha": 1.3333333333,
+      "n_elements": 64
+    }
+  ],
+  "nodes": [
+    {
+      "id": 1,
+      "name": "inlet",
+      "connections": [
+        { "vessel": 1, "end": "proximal" }
+      ],
+      "boundary_condition": {
+        "type": "prescribed",
+        "quantity": "flow_rate",
+        "csv_file": "data/inlet_flow_sine.csv"
+      }
+    },
+    {
+      "id": 2,
+      "name": "outlet",
+      "connections": [
+        { "vessel": 1, "end": "distal" }
+      ],
+      "boundary_condition": {
+        "type": "external",
+        "model": "windkessel",
+        "params": {
+          "r1": -1.0,
+          "compartments": [
+            { "r": 5.0e4, "c": 8.0e-7 },
+            { "r": 3.0e4, "c": 5.0e-7 }
+          ],
+          "p_out": 0.0,
+          "p_init": 0.0,
+          "sub_steps": 2
+        }
+      }
+    }
+  ]
+}

@@ -1,0 +1,41 @@
+{
+  "_description": "One straight vessel, a single half-sine inlet flow pulse (data/inlet_flow_sine.csv: 0.25 s, 5 cm^3/s peak), terminated by the classic three-element (RCR) Windkessel from hemo1d_couplings: matched proximal impedance R1 = rho*c0/A0 (r1 = -1), one compliance C draining through R2 to p_out = 0. The textbook demo -- pressure builds during the pulse and then decays with time constant tau = R2*C instead of collapsing to zero.",
+  "fluid": { "density": 1.05, "viscosity": 0.035 },
+  "vessels": [
+    {
+      "id": 1,
+      "name": "artery",
+      "length": 10.0,
+      "A0": 0.126,
+      "beta": 606060.0,
+      "alpha": 1.3333333333,
+      "n_elements": 80
+    }
+  ],
+  "nodes": [
+    {
+      "id": 1,
+      "name": "inlet",
+      "connections": [{ "vessel": 1, "end": "proximal" }],
+      "boundary_condition": {
+        "type": "prescribed",
+        "quantity": "flow_rate",
+        "csv_file": "data/inlet_flow_sine.csv"
+      }
+    },
+    {
+      "id": 2,
+      "name": "outlet",
+      "connections": [{ "vessel": 1, "end": "distal" }],
+      "boundary_condition": {
+        "type": "external",
+        "model": "windkessel",
+        "params": {
+          "r1": -1.0,
+          "compartments": [{ "r": 5.0e4, "c": 4.0e-6 }],
+          "p_out": 0.0
+        }
+      }
+    }
+  ]
+}
