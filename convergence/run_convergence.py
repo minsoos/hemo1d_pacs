@@ -11,7 +11,8 @@ import common as c
 def write_pulse(log=False):
     os.makedirs(c.GENERATED_DIR, exist_ok=True)
     pulse_csv_path = os.path.join(c.GENERATED_DIR, c.PULSE_CSV_NAME)
-    c.write_pulse_csv(pulse_csv_path)
+    c.write_pulse_csv(pulse_csv_path,
+                      max(c.TARGET_TIME, c.LONG_TARGET_TIME))
     if log:
         print(f"Wrote inlet pulse CSV: {pulse_csv_path}")
 
@@ -27,14 +28,14 @@ def load_network(network_path):
     print(f"Loaded: {network.vessel_count} vessels, {network.node_count} nodes")
     return network
 
-def run_case(study, case_name, network_path, p, dt, h, lengths):
+def run_case(study, case_name, network_path, p, dt, h, lengths, target_time):
     out_dir = c.case_dir(study, case_name)
     field_csv_path = os.path.join(out_dir, "field_snapshots.csv")
     manifest_path = os.path.join(out_dir, "manifest.json")
 
     margin = c.check_cfl(dt, h, p, out_dir)
-    steps = c.total_steps_for(dt)
-    record_every = c.record_steps_for(dt)
+    steps = c.total_steps_for(dt, target_time)
+    record_every = c.record_steps_for(dt, target_time)
 
     network = hemo1d.load_network(network_path)
 
@@ -64,45 +65,52 @@ def run_case(study, case_name, network_path, p, dt, h, lengths):
         manifest_path,
         study=study, case_name=case_name, polynomial_order=p,
         dt=dt, h=h, cfl_margin=margin,
-        target_time=c.TARGET_TIME,
+        target_time=target_time,
         record_every=record_every, steps=steps,
         num_snapshots=snapshots, lengths=lengths
     )
     print(f"  [{study}/{case_name}] h={h} p={p} dt={dt:.4e} steps={steps} "
           f"cfl={margin:.2%} snapshots={snapshots} -> {elapsed:.1f}s")
 
-
-def run_bifurcation_cases():
+def run_windkessel_cases(target_time):
     for p in c.P_LIST:
         for h in c.H_LIST:
             name = c.format_case_name(p, h)
-            path = os.path.join(c.GENERATED_DIR, name + ".json")
-            c.write_bifurcation_network_json(path, h, p, c.PULSE_CSV_NAME)
-            c.check_cfl(c.DT, h, p, f"{c.BIFURCATION_SUBDIR}/{name}")
-            run_case(c.BIFURCATION_SUBDIR, name, path, p, c.DT, h, 
-                     [c.BIFURCATION_PARENT_LENGTH, c.BIFURCATION_DAUGHTER_LENGTH, c.BIFURCATION_DAUGHTER_LENGTH])
+            network_path = os.path.join(c.GENERATED_DIR, "windkessel_" + name + ".json")
+            c.write_windkessel_bifurcation_json(network_path, h, p, c.PULSE_CSV_NAME)
+            c.check_cfl(c.DT, h, p, f"{c.WINDKESSEL_SUBDIR}/{name}")
+            run_case(c.WINDKESSEL_SUBDIR, name, network_path, p, c.DT, h, 
+                                 [c.BIFURCATION_PARENT_LENGTH, c.BIFURCATION_DAUGHTER_LENGTH, c.BIFURCATION_DAUGHTER_LENGTH],
+                                 target_time)
+            
 
-def run_single_cases():
+
+def run_bifurcation_cases(target_time):
+    for p in c.P_LIST:
+        for h in c.H_LIST:
+            name = c.format_case_name(p, h)
+            network_path = os.path.join(c.GENERATED_DIR, name + ".json")
+            c.write_bifurcation_network_json(network_path, h, p, c.PULSE_CSV_NAME)
+            c.check_cfl(c.DT, h, p, f"{c.BIFURCATION_SUBDIR}/{name}")
+            run_case(c.BIFURCATION_SUBDIR, name, network_path, p, c.DT, h, 
+                     [c.BIFURCATION_PARENT_LENGTH, c.BIFURCATION_DAUGHTER_LENGTH, c.BIFURCATION_DAUGHTER_LENGTH],
+                     target_time)
+
+def run_single_cases(target_time):
     for p in c.P_LIST:    
         for h in c.H_LIST:
             name = c.format_case_name(p, h)
             network_path = write_network(name+".json", h, p)
-            run_case(c.SPATIAL_SUBDIR, name, network_path, p, c.DT, h, [c.LENGTH,])
+            run_case(c.SPATIAL_SUBDIR, name, network_path, p, c.DT, h, [c.LENGTH,],
+                     target_time)
             
 
 def main():
     write_pulse()
-    run_single_cases()  
-    run_bifurcation_cases()
+    # run_single_cases(c.LONG_TARGET_TIME)  
+    # run_bifurcation_cases(c.TARGET_TIME)
+    run_windkessel_cases(c.LONG_TARGET_TIME)
     
-
-# def main():
-#     h, p = 0.125, 1
-#     name = f"Y-p{p}_h{h:g}".replace(".", "p")     # p1_h0p125
-#     network_path = os.path.join(c.GENERATED_DIR, name + ".json")
-#     c.write_bifurcation_network_json(network_path, h, p, c.PULSE_CSV_NAME)
-#     run_case("bifurcation", name, network_path, p, c.DT, h)
-
 
 if __name__ == "__main__":
     main()
