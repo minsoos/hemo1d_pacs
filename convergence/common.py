@@ -3,7 +3,10 @@ import math
 import json
 import numpy as np
 
-
+# %% Sim params
+P_LIST = [1, 2]
+H_LIST = tuple(1/np.power(2,np.arange(3,9))) ##
+DT = 1.0e-7
 # %% Physic parameters ------------------------------------------
 RHO = 1.055
 VISCOSITY = 0.045
@@ -18,32 +21,17 @@ C0 = math.sqrt(BETA * math.sqrt(A0) / (2.0 * RHO * A0))
 
 # %% Pulses -----------------------------------------------------
 
-# sin^2 pulse
-PULSE_AMPLITUDE = 5.0
-PULSE_HALF_WIDTH = 4.0e-4
-PULSE_CENTER = 1.0e-3
-PULSE_WINDOW = 2.0 * PULSE_CENTER
-PULSE_CSV_DT = 2.0e-7
-
-def pulse_value(t):
-    if abs(t-PULSE_CENTER) > PULSE_HALF_WIDTH:
-        return 0.0
-    return PULSE_AMPLITUDE * math.sin( \
-        math.pi * (t - PULSE_CENTER + PULSE_HALF_WIDTH) / (2 * PULSE_HALF_WIDTH))**2
-
-
 # gaussian pulse
 PULSE_AMPLITUDE = 5.0
 PULSE_SIGMA     = 2.0e-4
 PULSE_CENTER    = 5.0 * PULSE_SIGMA
-PULSE_WINDOW    = 2.0 * PULSE_CENTER
 PULSE_CSV_DT    = 2.0e-7
 
 def pulse_value(t):
     return PULSE_AMPLITUDE * math.exp(-0.5 * ((t - PULSE_CENTER) / PULSE_SIGMA) ** 2)
 
-def write_pulse_csv(path):
-    n = round(PULSE_WINDOW / PULSE_CSV_DT)
+def write_pulse_csv(path, target_time):
+    n = round(target_time / PULSE_CSV_DT)
     with open(path, "w") as f:
         f.write("time, flow_rate\n")
         for i in range(n+1):
@@ -52,20 +40,19 @@ def write_pulse_csv(path):
 
 # %% Time and snapshots
 TARGET_TIME = 3.0e-3
+LONG_TARGET_TIME = 8.0e-3
 NUM_SNAPSHOTS = 100
-BASE_DT_INTERVAL = TARGET_TIME / NUM_SNAPSHOTS
 
-def total_steps_for(dt):
-    n = TARGET_TIME / dt
-    n_int = round(n)
-    assert abs(n-n_int) < 1e-6 * max(n, 1.0), f"dt={dt:.4e} does not evenly divide TARGET_TIME"
-    return n_int
+def total_steps_for(dt, target_time):
+    steps = round(target_time / dt)
+    assert math.isclose(steps * dt, target_time, rel_tol=0.0,
+                        abs_tol=1.0e-14)
+    return steps
 
-def record_steps_for(dt):
-    k = BASE_DT_INTERVAL / dt
-    k_int = round(k)
-    assert abs(k-k_int) < 1e-6 * max(k, 1.0), f"dt={dt:.4e} does not evenly divide BASE_DT_INTERVAL"
-    return k_int
+def record_steps_for(dt, target_time, num_snapshots=NUM_SNAPSHOTS):
+    total_steps = total_steps_for(dt, target_time)
+    assert total_steps % num_snapshots == 0
+    return total_steps // num_snapshots
 
 # %% Directories
 CONVERGENCE_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -83,10 +70,7 @@ def format_case_name(p, h):
 
 
 # %% Convergence refinement parameters
-P_LIST   = [1, 2]
-LENGTH = 4.0
-H_LIST = tuple(1/np.pow(2,np.arange(3,9))) ##
-DT       = BASE_DT_INTERVAL / 384
+
 
 
 FIELD_CSV_COLUMNS = ["snapshot_index", "snapshot_time", "element_index",
@@ -109,6 +93,8 @@ def check_cfl(dt, h, p, label):
 
 
 # %% Single network ----------------------------------
+LENGTH = 4.0
+
 def build_network(h, polynomial_order, pulse_csv_name):
      # A single vessel: prescribed flow-rate inlet, non-reflecting outlet
     n = round(LENGTH/h)
@@ -202,6 +188,51 @@ def write_bifurcation_network_json(path, h, polynomial_order, pulse_csv_name):
     with open(path, "w") as f:
         json.dump(build_bifurcation_network(h, polynomial_order, pulse_csv_name), f, indent=2)
 
+# %% windkessel network
+WINDKESSEL_SUBDIR = "windkessel"
+
+def windkessel_boundary_condition():
+    return {
+        "type": "external",
+        "model": "windkessel",
+        "params": {
+            "r1": -1.0,
+            "compartments": [
+                {"r": 2.0e4, "c": 2.0e-6}
+            ],
+            "p_out": 0.0,
+            "p_init": 0.0,
+            "sub_steps": 1,
+        },
+    }
+
+def build_windkessel_bifurcation_network(h, polynomial_order, pulse_csv_name):
+    network = build_bifurcation_network(
+        h, polynomial_order, pulse_csv_name
+    )
+
+    for node in network["nodes"]:
+        if node["id"] in (3, 4):
+            node["boundary_condition"] = (
+                windkessel_boundary_condition()
+            )
+
+    network["_description"] = (
+        "Spatial-convergence symmetric bifurcation "
+        f"with RCR terminals (h={h}, p={polynomial_order})"
+    )
+    return network
+
+
+def write_windkessel_bifurcation_json(path, h, polynomial_order, pulse_csv_name):
+    os.makedirs(os.path.dirname(path), exist_ok=True)
+
+    network = build_windkessel_bifurcation_network(
+        h, polynomial_order, pulse_csv_name
+    )
+
+    with open(path, "w") as stream:
+        json.dump(network, stream, indent=2)
 
 # %% Manifest
 
