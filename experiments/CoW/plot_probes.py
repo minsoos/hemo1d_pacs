@@ -22,16 +22,17 @@ def vessel_label(csv_path):
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--probes-dir", default=os.path.join(THIS_DIR, "output", "probes"))
+    parser.add_argument("--dir", default = "output_windkessel")
     parser.add_argument("--quantity", default="flow_rate", choices=sorted(QUANTITY_LABELS))
-    parser.add_argument("--output", default=os.path.join(THIS_DIR, "output", "probes_grid.png"))
     parser.add_argument("--cols", type=int, default=3)
     parser.add_argument("--t-min", type=float, default=None, help="Only plot t >= this (e.g. to skip the initial transient).")
     args = parser.parse_args()
 
-    csv_paths = sorted(glob.glob(os.path.join(args.probes_dir, "v*.csv")))
+    probes_dir = os.path.join(THIS_DIR, args.dir, "probes")
+    output_dir = os.path.join(THIS_DIR, args.dir, "probes_grid.png")
+    csv_paths = sorted(glob.glob(os.path.join(probes_dir, "v*.csv")))
     if not csv_paths:
-        raise AttributeError(f"No probe CSV found in ", args.probes_dir)
+        raise AttributeError(f"No probe CSV found in ", probes_dir)
 
     n = len(csv_paths)
     cols = args.cols
@@ -59,9 +60,9 @@ def main():
     fig.suptitle(f"CoW probes -- {QUANTITY_LABELS[args.quantity]} at each vessel midpoint", fontsize=12)
     fig.tight_layout(rect=(0.0, 0.0, 1.0, 0.97))
 
-    os.makedirs(os.path.dirname(args.output), exist_ok=True)
-    fig.savefig(args.output, dpi=150)
-    print(f"Wrote {args.output}")
+    os.makedirs(os.path.dirname(output_dir), exist_ok=True)
+    fig.savefig(output_dir, dpi=150)
+    print(f"Wrote {output_dir}")
 
     
 if __name__ == "__main__":

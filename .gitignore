@@ -25,3 +25,5 @@ convergence/output/windkessel
 
 experiments/CoW/generated
 experiments/CoW/output
+experiments/CoW/output_windkessel_incomplete
+experiments/CoW/output_windkessel
