@@ -65,6 +65,31 @@ INFLOWS = {
 # Outlet vessels
 OUTLETS = [3, 8, 10, 15, 17, 18]
 
+WINDKESSEL_R2 = 2.0e4
+WINDKESSEL_C = 2.0e-6
+WINDKESSEL_P_OUT = 0.0
+WINDKESSEL_P_INIT = 0.0
+WINDKESSEL_SUB_STEPS = 1
+
+
+def windkessel_boundary_condition():
+    return {
+        "type": "external",
+        "model": "windkessel",
+        "params": {
+            "r1": -1.0,
+            "compartments": [
+                {
+                    "r": WINDKESSEL_R2,
+                    "c": WINDKESSEL_C,
+                }
+            ],
+            "p_out": WINDKESSEL_P_OUT,
+            "p_init": WINDKESSEL_P_INIT,
+            "sub_steps": WINDKESSEL_SUB_STEPS,
+        },
+    }
+
 SIMULATION_DURATION = 2.0  # s, matches the thesis' own run length.
 CARDIAC_PERIOD = 1.0  # s, the inflow CSVs cover exactly one period each.
 
@@ -148,11 +173,7 @@ def build_network_json():
                 "id": next_node_id,
                 "name": f"outlet_{VESSELS[vid][0].replace(' ', '_')}",
                 "connections": [{"vessel": vid, "end": "distal"}],
-                "boundary_condition": {
-                    "type": "prescribed",
-                    "quantity": "pressure",
-                    "csv_file": "outlet_pressure_zero.csv",
-                },
+                "boundary_condition": (windkessel_boundary_condition())
             }
         )
         next_node_id += 1
@@ -175,7 +196,7 @@ def build_network_json():
     network = {
         "_description": (
             "Complete Circle of Willis network (18 vessels, 9 trifurcations, 3 "
-            "prescribed-velocity inlets, 6 prescribed-pressure outlets), geometry "
+            "prescribed-velocity inlets, 6 RCR Windkessel outlets), geometry "
         ),
         "fluid": {"density": DENSITY, "viscosity": VISCOSITY},
         "vessels": vessels_json,
@@ -183,14 +204,9 @@ def build_network_json():
     }
     return network, n_cycles
 
-
-def main():
-    os.makedirs(GENERATED_DIR, exist_ok=True)
+def build_input_csv(n_cycles):
     periodic_dir = os.path.join(GENERATED_DIR, "periodic_inflows")
     os.makedirs(periodic_dir, exist_ok=True)
-
-    network, n_cycles = build_network_json()
-
     for vid, csv_name in INFLOWS.items():
         in_path = os.path.join(INFLOWS_DIR, csv_name)
         periodic_name = csv_name.strip(".csv") + "_periodic.csv"
@@ -198,11 +214,16 @@ def main():
         make_periodic_csv(in_path, out_path, CARDIAC_PERIOD, n_cycles)
         print(f"Wrote {out_path} ({n_cycles} cycles, {n_cycles * CARDIAC_PERIOD:.1f}s)")
 
-    outlet_csv = os.path.join(GENERATED_DIR, "outlet_pressure_zero.csv")
-    make_constant_csv(outlet_csv, 0.0, SIMULATION_DURATION + 1.0)
-    print(f"Wrote {outlet_csv}")
 
-    network_path = os.path.join(GENERATED_DIR, "cow_network.json")
+def main():
+    os.makedirs(GENERATED_DIR, exist_ok=True)
+    
+
+    network, n_cycles = build_network_json()
+
+    build_input_csv(n_cycles)
+
+    network_path = os.path.join(GENERATED_DIR, "cow_network_windkessel.json")
     with open(network_path, "w") as f:
         json.dump(network, f, indent=2)
     print(f"Wrote {network_path}")

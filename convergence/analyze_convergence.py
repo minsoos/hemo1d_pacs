@@ -132,7 +132,7 @@ def analyze_convergence(p, hs=(1/8,1/16,1/32), requested_time=None, expected_ord
     if richardson:
         ref = reference_field(hs[-1]/2, p, order=expected_order, requested_time=requested_time)
     else:
-        ref = _field(c.H_LIST[-1], p, requested_time=requested_time)
+        ref = _field(hs[-1]/2.0, p, requested_time=requested_time)
     per_h = []
 
     for h in hs:
@@ -178,10 +178,15 @@ def main():
         help="Expected order, to pass to Richardson.",
     )
     parser.add_argument(
-            "--richardson_use",
-            type=int,
-            default=1,
+            "--not_richardson_use",
+            action="store_true",
             help="Expected order, to pass to Richardson.",
+        )
+
+    parser.add_argument(
+            "--extended_hs",
+            action="store_true",
+            help="Use extended refinemenet.",
         )
     args = parser.parse_args()
 
@@ -193,12 +198,16 @@ def main():
     }[QUANTITY]
     REQ_TIME = args.time
     EXPECTED_ORDER = args.expected_order
-    RICHARDSON_USE = args.richardson_use
+    RICHARDSON_USE = not args.not_richardson_use
+
+    h_list = c.H_LIST
+    if args.extended_hs:
+        h_list = c.H_LIST_EXTENDED
 
     if RICHARDSON_USE:
-        hs = c.H_LIST[:-2]
+        hs = h_list[:-2]
     else:
-        hs = c.H_LIST[:-1]
+        hs = h_list[:-1]
     print("hs:", hs)
 
     fig, ax = plt.subplots(figsize=(6, 5))

@@ -4,6 +4,7 @@ import argparse
 import hemo1d
 import time
 import math
+from build_incomplete import VESSEL_TO_ELIMINATE
 
 THIS_DIR = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, THIS_DIR)
@@ -11,7 +12,6 @@ sys.path.insert(0, THIS_DIR)
 import build_network as bn
 
 GENERATED_DIR = os.path.join(THIS_DIR, "generated")
-OUTPUT_DIR = os.path.join(THIS_DIR, "output")
 
 def slug(name):
     return name.replace(" ", "_").replace("-", "_")
@@ -37,11 +37,31 @@ def main():
     parser.add_argument("--vtk-every", type=int, default=3000,
                          help="Write a VTK snapshot every N steps (~20ms cadence). 0 disables VTK.")
     parser.add_argument("--polynomial-order", type=int, default=bn.POLYNOMIAL_ORDER)
+    parser.add_argument("--incomplete", action="store_true", help="Executes the incomplete CoW instead of the complete one")
     args = parser.parse_args()
 
-    network_path = os.path.join(GENERATED_DIR, "cow_network.json")
+    if args.incomplete:
+        network_path = os.path.join(
+            GENERATED_DIR,
+            "cow_network_windkessel_incomplete.json",
+        )
+        output_dir = os.path.join(
+            THIS_DIR,
+            "output_windkessel_incomplete",
+        )
+    else:
+        network_path = os.path.join(
+            GENERATED_DIR,
+            "cow_network_windkessel.json",
+        )
+        output_dir = os.path.join(
+            THIS_DIR,
+            "output_windkessel",
+        )
+    
     if not os.path.exists(network_path):
         raise SystemExit(f"{network_path} not found. Run build_network.py first")
+
     network = hemo1d.load_network(network_path)
 
     settings = hemo1d.SimulationSettings()
@@ -51,12 +71,18 @@ def main():
 
     sim = hemo1d.Simulation(network, settings)
 
-    for vid, (name, length, a0, beta) in sorted(bn.VESSELS.items()):
-        sim.add_probe(f"v{vid:02d}_{slug(name)}", vid, length/2.0)
+    missing_vessel_id = VESSEL_TO_ELIMINATE if args.incomplete else None
+    probe_count = 0
 
-    probes_dir = os.path.join(OUTPUT_DIR, "probes")
+    for vid, (name, length, a0, beta) in sorted(bn.VESSELS.items()):
+        if vid == missing_vessel_id:
+            continue
+        sim.add_probe(f"v{vid:02d}_{slug(name)}", vid, length/2.0)
+        probe_count += 1
+
+    probes_dir = os.path.join(output_dir, "probes")
     os.makedirs(probes_dir, exist_ok=True)
-    vtk_dir = os.path.join(OUTPUT_DIR, "vtk") if args.vtk_every>0 else ""
+    vtk_dir = os.path.join(output_dir, "vtk") if args.vtk_every>0 else ""
 
     if vtk_dir:
         os.makedirs(vtk_dir, exist_ok=True)
@@ -71,7 +97,7 @@ def main():
     check_state(sim)
 
     sim.write_probes_csv(probes_dir)
-    print(f"Wrote {len(bn.VESSELS)} probe CSVs to {probes_dir}")
+    print(f"Wrote {probe_count} probe CSVs to {probes_dir}")
     if vtk_dir:
         print(f"Wrote VTK series to {vtk_dir}")
 
