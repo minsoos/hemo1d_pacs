@@ -2,6 +2,7 @@ import os
 import argparse
 import glob
 import math
+import numpy as np
 
 import matplotlib.pyplot as plt
 import pandas as pd
@@ -40,7 +41,8 @@ def main():
 
     fig, axes = plt.subplots(rows, cols, figsize=(4.2 * cols, 2.6 * rows), sharex=True)
     axes = axes.flatten()
-
+    if args.dir == "output_windkessel_incomplete":
+        axes = np.delete(axes, 3)
     for ax, csv_path in zip(axes, csv_paths):
         vid, name = vessel_label(csv_path)
         df = pd.read_csv(csv_path)
