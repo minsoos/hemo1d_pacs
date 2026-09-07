@@ -98,7 +98,7 @@ def run_bifurcation_cases(target_time):
 
 def run_single_cases(target_time):
     for p in c.P_LIST:    
-        for h in c.H_LIST:
+        for h in c.H_LIST_EXTENDED:
             name = c.format_case_name(p, h)
             network_path = write_network(name+".json", h, p)
             run_case(c.SPATIAL_SUBDIR, name, network_path, p, c.DT, h, [c.LENGTH,],
@@ -107,9 +107,9 @@ def run_single_cases(target_time):
 
 def main():
     write_pulse()
-    # run_single_cases(c.LONG_TARGET_TIME)  
+    run_single_cases(c.LONG_TARGET_TIME)  
     # run_bifurcation_cases(c.TARGET_TIME)
-    run_windkessel_cases(c.LONG_TARGET_TIME)
+    # run_windkessel_cases(c.LONG_TARGET_TIME)
     
 
 if __name__ == "__main__":

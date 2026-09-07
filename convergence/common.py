@@ -7,6 +7,8 @@ import numpy as np
 P_LIST = [1, 2]
 H_LIST = tuple(1/np.power(2,np.arange(3,9))) ##
 DT = 1.0e-7
+
+H_LIST_EXTENDED = tuple(1/np.power(2,np.arange(3,11))) ##
 # %% Physic parameters ------------------------------------------
 RHO = 1.055
 VISCOSITY = 0.045
