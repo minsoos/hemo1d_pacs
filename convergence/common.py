@@ -114,6 +114,7 @@ def build_network(h, polynomial_order, pulse_csv_name):
                 "A0": A0,
                 "beta": BETA,
                 "alpha": ALPHA,
+                "friction_kr": FRICTION_KR,
                 "n_elements": n,
                 "polynomial_order": polynomial_order,
             }
@@ -154,7 +155,7 @@ def build_bifurcation_network(h, polynomial_order, pulse_csv_name):
 
     def vessel(vid, name, length, n):
         return {"id": vid, "name": name, "length": length, "A0": A0,
-                "beta": BETA, "alpha": ALPHA, "n_elements": n,
+                "beta": BETA, "alpha": ALPHA, "friction_kr": FRICTION_KR, "n_elements": n,
                 "polynomial_order": polynomial_order}
 
     return {

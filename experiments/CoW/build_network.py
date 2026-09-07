@@ -65,25 +65,56 @@ INFLOWS = {
 # Outlet vessels
 OUTLETS = [3, 8, 10, 15, 17, 18]
 
-WINDKESSEL_R2 = 2.0e4
-WINDKESSEL_C = 2.0e-6
-WINDKESSEL_P_OUT = 0.0
-WINDKESSEL_P_INIT = 0.0
-WINDKESSEL_SUB_STEPS = 1
+# --- Windkessel terminal beds: per-territory calibration from Toro et al.
+# (2021), "CSF dynamics coupled to the global circulation", Table A1 --
+# total peripheral resistance R_T [mmHg.s/ml] and arterial compliance
+# Cart [ml/mmHg] of the bed distal to each terminal cerebral artery.
+MMHG = 1333.22                    # dyn/cm^2 per mmHg
+WINDKESSEL_P_OUT = 10.0 * MMHG    # downstream (intracranial) pressure ~ ICP
+WINDKESSEL_P_INIT = 67.0 * MMHG   # start near the operating point (skip charge-up)
+WINDKESSEL_SUB_STEPS = 2
+
+#            outlet id : (R_T [mmHg.s/ml], Cart [ml/mmHg])
+TORO_A1 = {
+    3:  (46.3595, 0.0029),   # L-PCA II
+    8:  (22.5727, 0.0059),   # L-MCA
+    10: (46.3595, 0.0029),   # R-PCA II
+    15: (22.5727, 0.0059),   # R-MCA
+    17: (45.0952, 0.0029),   # L-ACA II
+    18: (45.0952, 0.0029),   # R-ACA II
+}
 
 
-def windkessel_boundary_condition():
+def matched_r1(vid):
+    """Matched characteristic impedance rho*c0/A0 of the terminal vessel at
+    rest -- the value params["r1"] = -1 makes the solver compute."""
+    _, _, a0, beta = VESSELS[vid]
+    c0 = math.sqrt(beta * math.sqrt(a0) / (2.0 * DENSITY * a0))
+    return DENSITY * c0 / a0
+
+
+def windkessel_compartments(vid):
+    """Two-stage RC ladder for one outlet bed, CGS: an arteriole stage then a
+    capillary stage. rem = R_T - R1 is split 70/30 (Toro Sect. 4.1.2); the
+    capillary stage gets 15% of Cart. Total DC resistance R1 + sum(r_k)
+    is then exactly R_T."""
+    rt_mmhg, cart_mmhg = TORO_A1[vid]
+    rt, cart = rt_mmhg * MMHG, cart_mmhg / MMHG
+    rem = rt - matched_r1(vid)
+    assert rem > 0.0, (vid, rem)
+    return [
+        {"r": 0.7 * rem, "c": cart},
+        {"r": 0.3 * rem, "c": 0.15 * cart},
+    ]
+
+
+def windkessel_boundary_condition(vid):
     return {
         "type": "external",
         "model": "windkessel",
         "params": {
             "r1": -1.0,
-            "compartments": [
-                {
-                    "r": WINDKESSEL_R2,
-                    "c": WINDKESSEL_C,
-                }
-            ],
+            "compartments": windkessel_compartments(vid),
             "p_out": WINDKESSEL_P_OUT,
             "p_init": WINDKESSEL_P_INIT,
             "sub_steps": WINDKESSEL_SUB_STEPS,
@@ -173,7 +204,7 @@ def build_network_json():
                 "id": next_node_id,
                 "name": f"outlet_{VESSELS[vid][0].replace(' ', '_')}",
                 "connections": [{"vessel": vid, "end": "distal"}],
-                "boundary_condition": (windkessel_boundary_condition())
+                "boundary_condition": (windkessel_boundary_condition(vid))
             }
         )
         next_node_id += 1
