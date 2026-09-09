@@ -23,3 +23,5 @@ experiments/CoW/generated
 experiments/CoW/output
 experiments/CoW/output_windkessel_incomplete
 experiments/CoW/output_windkessel
+*respaldo*
+*incomplete_effect_summary.csv
