@@ -1,0 +1,14 @@
+]633;E;date -u;a4fef4fb-cd06-49db-9947-59b7fa297811]633;CMon Sep  7 22:26:31 UTC 2026
+Commit: a57a421a88340d4ceaa9403eb1d1f454ad7a3c6b
+Linux 6.18.33.2-microsoft-standard-WSL2 x86_64 GNU/Linux
+c++ (Ubuntu 11.4.0-1ubuntu1~22.04.3) 11.4.0
+Copyright (C) 2021 Free Software Foundation, Inc.
+This is free software; see the source for copying conditions.  There is NO
+warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+
+cmake version 3.22.1
+
+CMake suite maintained and supported by Kitware (kitware.com/cmake).
+Build: Release
+Python bindings: OFF
+OMP_NUM_THREADS: 1

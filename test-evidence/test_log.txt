@@ -1,0 +1,194 @@
+[OUTPUT] 
+Internal ctest changing into directory: /home/min_soos_/polimi/pacs/project/hemo1d_pacs/build-linux
+
+[HANDLER_OUTPUT] 
+Test project /home/min_soos_/polimi/pacs/project/hemo1d_pacs/build-linux
+
+      Start  1: LinearElasticTubeLaw gives zero pressure at the reference area
+ 1/92 Test  #1: LinearElasticTubeLaw gives zero pressure at the reference area ...............................   Passed    0.00 sec
+      Start  2: LinearElasticTubeLaw pressure increases with area
+ 2/92 Test  #2: LinearElasticTubeLaw pressure increases with area ............................................   Passed    0.00 sec
+      Start  3: LinearElasticTubeLaw areaFromPressure inverts pressure
+ 3/92 Test  #3: LinearElasticTubeLaw areaFromPressure inverts pressure .......................................   Passed    0.00 sec
+      Start  4: LinearElasticTubeLaw wave speed matches the closed-form reference value
+ 4/92 Test  #4: LinearElasticTubeLaw wave speed matches the closed-form reference value ......................   Passed    0.00 sec
+      Start  5: LinearElasticTubeLaw pressureFluxIntegral derivative matches c^2
+ 5/92 Test  #5: LinearElasticTubeLaw pressureFluxIntegral derivative matches c^2 .............................   Passed    0.00 sec
+      Start  6: characteristics at rest gives symmetric +/- wave speeds
+ 6/92 Test  #6: characteristics at rest gives symmetric +/- wave speeds ......................................   Passed    0.01 sec
+      Start  7: characteristics orders lambdaMinus below lambdaPlus
+ 7/92 Test  #7: characteristics orders lambdaMinus below lambdaPlus ..........................................   Passed    0.01 sec
+      Start  8: characteristics shifts with the flow velocity
+ 8/92 Test  #8: characteristics shifts with the flow velocity ................................................   Passed    0.01 sec
+      Start  9: NumericalFlux is consistent: F*(U, U) == F(U) - LaxFriedrichsFlux
+ 9/92 Test  #9: NumericalFlux is consistent: F*(U, U) == F(U) - LaxFriedrichsFlux ............................   Passed    0.01 sec
+      Start 10: NumericalFlux is consistent: F*(U, U) == F(U) - HllFlux
+10/92 Test #10: NumericalFlux is consistent: F*(U, U) == F(U) - HllFlux ......................................   Passed    0.00 sec
+      Start 11: HllFlux reduces to the left physical flux when both waves move right
+11/92 Test #11: HllFlux reduces to the left physical flux when both waves move right .........................   Passed    0.00 sec
+      Start 12: HllFlux reduces to the right physical flux when both waves move left
+12/92 Test #12: HllFlux reduces to the right physical flux when both waves move left .........................   Passed    0.00 sec
+      Start 13: LaxFriedrichsFlux adds dissipation proportional to the jump
+13/92 Test #13: LaxFriedrichsFlux adds dissipation proportional to the jump ..................................   Passed    0.01 sec
+      Start 14: Network: Simplest network
+14/92 Test #14: Network: Simplest network ....................................................................   Passed    0.00 sec
+      Start 15: Network: Duplicated vessels
+15/92 Test #15: Network: Duplicated vessels ..................................................................   Passed    0.01 sec
+      Start 16: Network: Duplicated nodes
+16/92 Test #16: Network: Duplicated nodes ....................................................................   Passed    0.01 sec
+      Start 17: Network: Unassigned end
+17/92 Test #17: Network: Unassigned end ......................................................................   Passed    0.00 sec
+      Start 18: Network: 2 nodes assigning to 1 space
+18/92 Test #18: Network: 2 nodes assigning to 1 space ........................................................   Passed    0.01 sec
+      Start 19: Network: Juntion creation
+19/92 Test #19: Network: Juntion creation ....................................................................   Passed    0.01 sec
+      Start 20: TimeSeries: Creates successfully
+20/92 Test #20: TimeSeries: Creates successfully .............................................................   Passed    0.00 sec
+      Start 21: TimeSeries: Interpolates linearly between samples
+21/92 Test #21: TimeSeries: Interpolates linearly between samples ............................................   Passed    0.00 sec
+      Start 22: TimeSeries: Non non-decreasing time values
+22/92 Test #22: TimeSeries: Non non-decreasing time values ...................................................   Passed    0.01 sec
+      Start 23: TimeSeries: Non strictly increasing time values
+23/92 Test #23: TimeSeries: Non strictly increasing time values ..............................................   Passed    0.00 sec
+      Start 24: TimeSeries: Different lengths of times and values
+24/92 Test #24: TimeSeries: Different lengths of times and values ............................................   Passed    0.01 sec
+      Start 25: TimeSeries: 0 length vectors
+25/92 Test #25: TimeSeries: 0 length vectors .................................................................   Passed    0.01 sec
+      Start 26: TimeSeries::fromCsv search at a missing file
+26/92 Test #26: TimeSeries::fromCsv search at a missing file .................................................   Passed    0.01 sec
+      Start 27: TimeSeries::fromCsv reads a header and data rows
+27/92 Test #27: TimeSeries::fromCsv reads a header and data rows .............................................   Passed    0.01 sec
+      Start 28: gaussLegendre integrates polynomials exactly up to degree 2n-1
+28/92 Test #28: gaussLegendre integrates polynomials exactly up to degree 2n-1 ...............................   Passed    0.00 sec
+      Start 29: gaussLegendre rejects zero points
+29/92 Test #29: gaussLegendre rejects zero points ............................................................   Passed    0.00 sec
+      Start 30: gaussLobattoLegendre includes the endpoints and sums weights to 2
+30/92 Test #30: gaussLobattoLegendre includes the endpoints and sums weights to 2 ............................   Passed    0.01 sec
+      Start 31: gaussLobattoLegendre matches the known 3-point rule
+31/92 Test #31: gaussLobattoLegendre matches the known 3-point rule ..........................................   Passed    0.00 sec
+      Start 32: gaussLobattoLegendre rejects fewer than 2 points
+32/92 Test #32: gaussLobattoLegendre rejects fewer than 2 points .............................................   Passed    0.01 sec
+      Start 33: NodalBasis satisfies the Kronecker delta property at its own nodes
+33/92 Test #33: NodalBasis satisfies the Kronecker delta property at its own nodes ...........................   Passed    0.00 sec
+      Start 34: NodalBasis is a partition of unity everywhere
+34/92 Test #34: NodalBasis is a partition of unity everywhere ................................................   Passed    0.00 sec
+      Start 35: NodalBasis differentiation matrix reproduces exact polynomial derivatives
+35/92 Test #35: NodalBasis differentiation matrix reproduces exact polynomial derivatives ....................   Passed    0.01 sec
+      Start 36: NodalBasis evaluateDerivative matches the differentiation matrix at nodes
+36/92 Test #36: NodalBasis evaluateDerivative matches the differentiation matrix at nodes ....................   Passed    0.00 sec
+      Start 37: NodalBasis rejects duplicate nodes
+37/92 Test #37: NodalBasis rejects duplicate nodes ...........................................................   Passed    0.01 sec
+      Start 38: ReferenceElement has GLL nodes including both endpoints
+38/92 Test #38: ReferenceElement has GLL nodes including both endpoints ......................................   Passed    0.01 sec
+      Start 39: ReferenceElement mass matrix is symmetric and its total sums to the interval length
+39/92 Test #39: ReferenceElement mass matrix is symmetric and its total sums to the interval length ..........   Passed    0.01 sec
+      Start 40: ReferenceElement mass matrix diagonal entries are positive
+40/92 Test #40: ReferenceElement mass matrix diagonal entries are positive ...................................   Passed    0.01 sec
+      Start 41: ReferenceElement basisAtQuadrature reproduces the partition of unity
+41/92 Test #41: ReferenceElement basisAtQuadrature reproduces the partition of unity .........................   Passed    0.00 sec
+      Start 42: Mesh flattens all vessels into one contiguous element array
+42/92 Test #42: Mesh flattens all vessels into one contiguous element array ..................................   Passed    0.01 sec
+      Start 43: Mesh elements carry correct neighbor topology within a vessel
+43/92 Test #43: Mesh elements carry correct neighbor topology within a vessel ................................   Passed    0.00 sec
+      Start 44: Mesh element geometry matches a uniform partition of the vessel
+44/92 Test #44: Mesh element geometry matches a uniform partition of the vessel ..............................   Passed    0.00 sec
+      Start 45: Mesh assigns contiguous, non-overlapping DOF offsets
+45/92 Test #45: Mesh assigns contiguous, non-overlapping DOF offsets .........................................   Passed    0.01 sec
+      Start 46: Mesh caches one ReferenceElement per distinct polynomial order
+46/92 Test #46: Mesh caches one ReferenceElement per distinct polynomial order ...............................   Passed    0.01 sec
+      Start 47: Mesh elements cache the owning vessel's physical parameters
+47/92 Test #47: Mesh elements cache the owning vessel's physical parameters ..................................   Passed    0.01 sec
+      Start 48: loadNetwork parses the simple bifurcation example
+48/92 Test #48: loadNetwork parses the simple bifurcation example ............................................   Passed    0.00 sec
+      Start 49: loadNetwork parses an external (windkessel) terminal
+49/92 Test #49: loadNetwork parses an external (windkessel) terminal .........................................   Passed    0.01 sec
+      Start 50: loadNetwork throws a helpful error on a missing file
+50/92 Test #50: loadNetwork throws a helpful error on a missing file .........................................   Passed    0.01 sec
+      Start 51: SpatialOperator gives (near) zero residual for a uniform state - LaxFriedrichsFlux
+51/92 Test #51: SpatialOperator gives (near) zero residual for a uniform state - LaxFriedrichsFlux ...........   Passed    0.00 sec
+      Start 52: SpatialOperator gives (near) zero residual for a uniform state - HllFlux
+52/92 Test #52: SpatialOperator gives (near) zero residual for a uniform state - HllFlux .....................   Passed    0.01 sec
+      Start 53: SpatialOperator friction source is uniform for a uniform state
+53/92 Test #53: SpatialOperator friction source is uniform for a uniform state ...............................   Passed    0.00 sec
+      Start 54: cflTimeStep matches h/((2p+1)*c) for a uniform, at-rest state
+54/92 Test #54: cflTimeStep matches h/((2p+1)*c) for a uniform, at-rest state ................................   Passed    0.01 sec
+      Start 55: cflTimeStep scales inversely with cflNumber and is smaller for higher order
+55/92 Test #55: cflTimeStep scales inversely with cflNumber and is smaller for higher order ..................   Passed    0.01 sec
+      Start 56: MinmodLimiter leaves a globally linear state unchanged
+56/92 Test #56: MinmodLimiter leaves a globally linear state unchanged .......................................   Passed    0.00 sec
+      Start 57: MinmodLimiter flattens a spurious spike while preserving the cell average
+57/92 Test #57: MinmodLimiter flattens a spurious spike while preserving the cell average ....................   Passed    0.00 sec
+      Start 58: Solver::step leaves an exact steady uniform state unchanged
+58/92 Test #58: Solver::step leaves an exact steady uniform state unchanged ..................................   Passed    0.01 sec
+      Start 59: Solver::step works without a limiter
+59/92 Test #59: Solver::step works without a limiter .........................................................   Passed    0.00 sec
+      Start 60: solveExteriorBoundary with a prescribed area forces that area exactly
+60/92 Test #60: solveExteriorBoundary with a prescribed area forces that area exactly ........................   Passed    0.01 sec
+      Start 61: solveExteriorBoundary with a prescribed flow rate forces that flow rate exactly
+61/92 Test #61: solveExteriorBoundary with a prescribed flow rate forces that flow rate exactly ..............   Passed    0.01 sec
+      Start 62: solveExteriorBoundary with a prescribed pressure matches areaFromPressure
+62/92 Test #62: solveExteriorBoundary with a prescribed pressure matches areaFromPressure ....................   Passed    0.00 sec
+      Start 63: solveExteriorBoundary non-reflecting leaves an exact steady state unchanged
+63/92 Test #63: solveExteriorBoundary non-reflecting leaves an exact steady state unchanged ..................   Passed    0.01 sec
+      Start 64: solveJunction reproduces a steady straight-pipe fixed point
+64/92 Test #64: solveJunction reproduces a steady straight-pipe fixed point ..................................   Passed    0.00 sec
+      Start 65: solveJunction satisfies mass conservation and pressure continuity for a bifurcation
+65/92 Test #65: solveJunction satisfies mass conservation and pressure continuity for a bifurcation ..........   Passed    0.00 sec
+      Start 66: solveJunction rejects fewer than two branches
+66/92 Test #66: solveJunction rejects fewer than two branches ................................................   Passed    0.01 sec
+      Start 67: BoundarySolver: Single vessel with a prescribed inlet and stays stable
+67/92 Test #67: BoundarySolver: Single vessel with a prescribed inlet and stays stable .......................   Passed    0.00 sec
+      Start 68: BoundarySolver: Example implementtion
+68/92 Test #68: BoundarySolver: Example implementtion ........................................................   Passed    0.01 sec
+      Start 69: Probe: Single vessel with a prescribed inlet and stays stable
+69/92 Test #69: Probe: Single vessel with a prescribed inlet and stays stable ................................   Passed    0.00 sec
+      Start 70: ProbeRecorder: writeCsv: writes one file per probe with a header
+70/92 Test #70: ProbeRecorder: writeCsv: writes one file per probe with a header .............................   Passed    0.01 sec
+      Start 71: writeVtk produces a well-formed legacy VTK PolyData file
+71/92 Test #71: writeVtk produces a well-formed legacy VTK PolyData file .....................................   Passed    0.00 sec
+      Start 72: VtkSeriesWriter writes numbered snapshots and a pvd collection
+72/92 Test #72: VtkSeriesWriter writes numbered snapshots and a pvd collection ...............................   Passed    0.01 sec
+      Start 73: Simulation runs the example bifurcation network end to end
+73/92 Test #73: Simulation runs the example bifurcation network end to end ...................................   Passed    0.01 sec
+      Start 74: Simulation::setUniformInitialCondition overrides the default per-vessel A0
+74/92 Test #74: Simulation::setUniformInitialCondition overrides the default per-vessel A0 ...................   Passed    0.01 sec
+      Start 75: Simulation::fieldSnapshot reflects every DOF's coordinate and state exactly
+75/92 Test #75: Simulation::fieldSnapshot reflects every DOF's coordinate and state exactly ..................   Passed    0.00 sec
+      Start 76: Simulation::cflTimeStep matches physics::cflTimeStep on the live state
+76/92 Test #76: Simulation::cflTimeStep matches physics::cflTimeStep on the live state .......................   Passed    0.00 sec
+      Start 77: Simulation::run with dt <= 0 uses dynamic CFL-based stepping and still lands on targetTime
+77/92 Test #77: Simulation::run with dt <= 0 uses dynamic CFL-based stepping and still lands on targetTime ...   Passed    0.01 sec
+      Start 78: BloodFlowModel matches the reference blood-flow formulas
+78/92 Test #78: BloodFlowModel matches the reference blood-flow formulas .....................................   Passed    0.00 sec
+      Start 79: leftEigenvectors satisfies l^T H = lambda l^T
+79/92 Test #79: leftEigenvectors satisfies l^T H = lambda l^T ................................................   Passed    0.00 sec
+      Start 80: compatibilityPrediction is a no-op with zero derivatives and no friction
+80/92 Test #80: compatibilityPrediction is a no-op with zero derivatives and no friction .....................   Passed    0.01 sec
+      Start 81: compatibilityPrediction applies friction as expected
+81/92 Test #81: compatibilityPrediction applies friction as expected .........................................   Passed    0.00 sec
+      Start 82: NonReflectingCoupling matches solveExteriorBoundary exactly
+82/92 Test #82: NonReflectingCoupling matches solveExteriorBoundary exactly ..................................   Passed    0.01 sec
+      Start 83: makeTerminalCoupling builds the right kind and rejects unknowns
+83/92 Test #83: makeTerminalCoupling builds the right kind and rejects unknowns ..............................   Passed    0.01 sec
+      Start 84: CallbackCoupling forwards to the user function
+84/92 Test #84: CallbackCoupling forwards to the user function ...............................................   Passed    0.00 sec
+      Start 85: WindkesselCoupling leaves an exact rest state unchanged
+85/92 Test #85: WindkesselCoupling leaves an exact rest state unchanged ......................................   Passed    0.00 sec
+      Start 86: WindkesselCoupling matched R1 equals rho*c0/A0
+86/92 Test #86: WindkesselCoupling matched R1 equals rho*c0/A0 ...............................................   Passed    0.00 sec
+      Start 87: WindkesselCoupling commit charges a single RC compartment to Q*R
+87/92 Test #87: WindkesselCoupling commit charges a single RC compartment to Q*R .............................   Passed    0.01 sec
+      Start 88: WindkesselCoupling relaxes to p_out once inflow stops
+88/92 Test #88: WindkesselCoupling relaxes to p_out once inflow stops ........................................   Passed    0.00 sec
+      Start 89: WindkesselCoupling solve enforces the RCR interface relation
+89/92 Test #89: WindkesselCoupling solve enforces the RCR interface relation .................................   Passed    0.00 sec
+      Start 90: WindkesselCoupling: a resistive bed reflects a forward pulse (positive)
+90/92 Test #90: WindkesselCoupling: a resistive bed reflects a forward pulse (positive) ......................   Passed    0.83 sec
+      Start 91: BoundaryResolver populates TerminalInterface::rho for couplings
+91/92 Test #91: BoundaryResolver populates TerminalInterface::rho for couplings ..............................   Passed    0.00 sec
+      Start 92: Simulation drives the single-vessel windkessel example and stays stable
+92/92 Test #92: Simulation drives the single-vessel windkessel example and stays stable ......................   Passed    0.26 sec
+
+[0;32m100% tests passed[0;0m, 0 tests failed[0;0m out of 92
+
+Total Test time (real) =   1.71 sec
