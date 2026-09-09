@@ -21,8 +21,8 @@ TEST_CASE("loadNetwork parses the simple bifurcation example", "[network_parser]
     CHECK(net.vesselCount() == 3);
     CHECK(net.nodeCount() == 4);
 
-    CHECK(net.fluid().density == Approx(1.05));
-    CHECK(net.fluid().viscosity == Approx(0.035));
+    CHECK(net.fluid().density == Approx(1.055));
+    CHECK(net.fluid().viscosity == Approx(0.045));
 
     const Vessel& omega1 = net.vessel(1);
     CHECK(omega1.name() == "Omega1");
